@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 48 20% 97%;
+    --foreground: 220 20% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 14%;
+    --primary: 188 55% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 46%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 20% 14%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 188 55% 32%;
+    --chart-1: 188 55% 32%;
+    --chart-2: 188 40% 48%;
+    --chart-3: 160 45% 42%;
+    --chart-4: 220 30% 55%;
+    --chart-5: 340 55% 52%;
+    --radius: 0.625rem;
+    --font-heading: Inter, "Avenir Next", Aptos, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    --font-body: Inter, Aptos, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Avenir Next", Inter, Aptos, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 14%;
+    --sidebar-primary: 188 55% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 20% 14%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 188 55% 32%;
+  }
+
+  .dark {
+    --background: 222 20% 7%;
+    --foreground: 210 20% 96%;
+    --card: 222 18% 10%;
+    --card-foreground: 210 20% 96%;
+    --popover: 222 18% 10%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 188 50% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 16% 14%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 222 16% 14%;
+    --muted-foreground: 220 10% 58%;
+    --accent: 222 16% 14%;
+    --accent-foreground: 210 20% 96%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 222 14% 16%;
+    --input: 222 14% 16%;
+    --ring: 188 50% 42%;
+    --chart-1: 188 50% 42%;
+    --chart-2: 188 35% 50%;
+    --chart-3: 160 40% 45%;
+    --chart-4: 220 25% 50%;
+    --chart-5: 340 50% 55%;
+    --sidebar-background: 222 20% 7%;
+    --sidebar-foreground: 210 20% 92%;
+    --sidebar-primary: 188 50% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 16% 12%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 222 14% 14%;
+    --sidebar-ring: 188 50% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-heading tracking-tight;
+  }
+
+  html {
+    scroll-padding-bottom: 5rem;
+  }
+}
+
+@layer utilities {
+  .touch-target {
+    @apply min-h-11 min-w-11;
+  }
+
+  .minimal-card {
+    @apply rounded-2xl border border-border/80 bg-card shadow-sm shadow-black/[0.02];
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-white/25 bg-white/15 shadow-lg shadow-black/10 backdrop-blur-md;
+  }
+
+  .glass-card-dark {
+    @apply rounded-2xl border border-white/10 bg-black/25 shadow-lg shadow-black/20 backdrop-blur-md;
+  }
+
+  .photo-card {
+    @apply rounded-xl border border-border/70 bg-card shadow-sm shadow-black/[0.03] transition-all hover:border-primary/25 hover:shadow-md hover:shadow-black/[0.06];
+  }
+
+  .elevated-card {
+    @apply rounded-2xl border border-border/70 bg-card shadow-sm shadow-black/[0.04];
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .kiosk-page {
+    min-height: auto !important;
+    background: white !important;
+  }
+
+  .kiosk-no-print {
+    display: none !important;
+  }
+
+  .kiosk-print-shell {
+    display: block !important;
+    padding: 0 !important;
+  }
+
+  .kiosk-print-receipt {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    border: 1px solid hsl(var(--border)) !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .kiosk-print-receipt * {
+    color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
