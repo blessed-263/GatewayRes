@@ -22,6 +22,7 @@ export function workloadForActive(active: number) {
 interface TeamMemberCardProps {
   member: TeamProfile;
   active: number;
+  departmentLabel?: string;
   index?: number;
 }
 
@@ -34,7 +35,12 @@ const accentBars = [
   "from-rose-500/80 to-rose-500/40",
 ];
 
-export function TeamMemberCard({ member, active, index = 0 }: TeamMemberCardProps) {
+export function TeamMemberCard({
+  member,
+  active,
+  departmentLabel,
+  index = 0,
+}: TeamMemberCardProps) {
   const { pct, status, label } = workloadForActive(active);
   const accent = accentBars[index % accentBars.length];
 
@@ -80,6 +86,11 @@ export function TeamMemberCard({ member, active, index = 0 }: TeamMemberCardProp
                 <h3 className="text-xl font-semibold tracking-tight group-hover:text-primary">
                   {member.name}
                 </h3>
+                {departmentLabel ? (
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-primary/80">
+                    {departmentLabel}
+                  </p>
+                ) : null}
                 <p className="mt-0.5 text-sm font-medium text-foreground/80">{member.role}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{member.workType}</p>
               </div>

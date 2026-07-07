@@ -21,6 +21,7 @@ interface TaskThumbnailCardProps {
   /** "row" (default) is a horizontal list item; "tile" is a compact stacked card for dense grids. */
   layout?: "row" | "tile";
   className?: string;
+  hideImages?: boolean;
 }
 
 function thumbnailUrl(repair: Repair) {
@@ -37,8 +38,9 @@ export function TaskThumbnailCard({
   compact = false,
   layout = "row",
   className,
+  hideImages = false,
 }: TaskThumbnailCardProps) {
-  const photo = thumbnailUrl(repair);
+  const photo = hideImages ? undefined : thumbnailUrl(repair);
   const CategoryIcon = categoryIcons[repair.category] ?? categoryIcons.other;
   const tileClass = categoryTileClass[repair.category] ?? categoryTileClass.other;
 

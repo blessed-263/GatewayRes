@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Home, Info, Printer, Wrench } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Home, Info, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,41 +12,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FileUploadField } from "@/components/dashboard/FileUploadField";
 import { useRepairs } from "@/context/RepairsContext";
+import {
+  buildingOptions,
+  floorsForBuilding,
+  type ComplaintBuilding,
+} from "@/data/buildingFloors";
+import { complaintTypeOptions } from "@/lib/complaintTypes";
 import { categoryLabels } from "@/lib/repairLabels";
 import { cn } from "@/lib/utils";
 import type {
   Building,
   Repair,
   RepairCategory,
-  RepairPriority,
 } from "@/types/repair";
-
-const buildings: Building[] = [
-  "Genesis",
-  "Lascelles",
-  "Truman House",
-  "Claim Street Main",
-];
-
-const categories: RepairCategory[] = [
-  "plumbing",
-  "electrical",
-  "hvac",
-  "structural",
-  "appliance",
-  "pest_control",
-  "painting",
-  "other",
-];
-
-const priorities: { value: RepairPriority; label: string; hint: string }[] = [
-  { value: "low", label: "Low", hint: "Can wait" },
-  { value: "medium", label: "Normal", hint: "Standard repair" },
-  { value: "high", label: "High", hint: "Needs attention soon" },
-  { value: "urgent", label: "Urgent", hint: "Safety or access issue" },
-];
 
 type KioskStep = 0 | 1 | 2;
 
@@ -56,18 +35,18 @@ export function KioskPage() {
   const [step, setStep] = useState<KioskStep>(0);
   const [submittedRepair, setSubmittedRepair] = useState<Repair | null>(null);
 
-  const [studentName, setStudentName] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
-  const [building, setBuilding] = useState<Building>("Genesis");
+  const [firstName, setFirstName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [building, setBuilding] = useState<ComplaintBuilding>(buildingOptions[0]);
+  const [floor, setFloor] = useState("");
   const [unit, setUnit] = useState("");
-  const [category, setCategory] = useState<RepairCategory>("plumbing");
-  const [priority, setPriority] = useState<RepairPriority>("medium");
+  const [category, setCategory] = useState<RepairCategory>(complaintTypeOptions[0].value);
   const [description, setDescription] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const roomStepComplete = studentName.trim() && unit.trim();
+  const roomStepComplete =
+    firstName.trim() && surname.trim() && building.trim() && floor.trim() && unit.trim();
   const problemStepComplete = description.trim().length >= 10;
   const canSubmit = roomStepComplete && problemStepComplete;
 
@@ -81,14 +60,13 @@ export function KioskPage() {
     setStarted(false);
     setStep(0);
     setSubmittedRepair(null);
-    setStudentName("");
-    setContactPhone("");
-    setBuilding("Genesis");
+    setFirstName("");
+    setSurname("");
+    setBuilding(buildingOptions[0]);
+    setFloor("");
     setUnit("");
-    setCategory("plumbing");
-    setPriority("medium");
+    setCategory(complaintTypeOptions[0].value);
     setDescription("");
-    setFiles([]);
     setSubmitting(false);
     setError(null);
   }
@@ -98,20 +76,16 @@ export function KioskPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const repair = await addRepair(
-        {
+      const repair = await addRepair({
           unit: unit.trim(),
-          building,
+          building: building as Building,
+          floor: floor.trim(),
           title: issueTitle,
           description: description.trim(),
           category,
-          priority,
-          reportedBy: studentName.trim(),
+          reportedBy: `${firstName.trim()} ${surname.trim()}`.trim(),
           loggedBy: "Gateway Kiosk",
-          ...(contactPhone.trim() && { residentPhone: contactPhone.trim() }),
-        },
-        files
-      );
+        });
       setSubmittedRepair(repair);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not submit request.");
@@ -128,22 +102,16 @@ export function KioskPage() {
         {!started ? (
           <WelcomeScreen onStart={() => setStarted(true)} />
         ) : submittedRepair ? (
-          <SuccessScreen
-            repair={submittedRepair}
-            onReset={resetKiosk}
-            onPrint={() => window.print()}
-          />
+          <SuccessScreen repair={submittedRepair} />
         ) : (
           <div className="w-full space-y-6">
             <div>
-              <p className="text-sm font-medium text-primary">Central Maintenance Request</p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                Log a maintenance query
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                Use this front-desk terminal to submit a maintenance issue. You will receive a
-                reference number after submission.
+              <p className="text-sm font-medium uppercase tracking-wide text-primary">
+                Maintenance complaints
               </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                Gateway Student Accomodation maintenance form
+              </h1>
             </div>
 
             <StepIndicator step={step} />
@@ -153,12 +121,14 @@ export function KioskPage() {
                 <div className="p-6 sm:p-7">
                   {step === 0 && (
                     <RoomDetailsStep
-                      studentName={studentName}
-                      setStudentName={setStudentName}
-                      contactPhone={contactPhone}
-                      setContactPhone={setContactPhone}
+                      firstName={firstName}
+                      setFirstName={setFirstName}
+                      surname={surname}
+                      setSurname={setSurname}
                       building={building}
                       setBuilding={setBuilding}
+                      floor={floor}
+                      setFloor={setFloor}
                       unit={unit}
                       setUnit={setUnit}
                     />
@@ -168,25 +138,20 @@ export function KioskPage() {
                     <ProblemDetailsStep
                       category={category}
                       setCategory={setCategory}
-                      priority={priority}
-                      setPriority={setPriority}
                       description={description}
                       setDescription={setDescription}
-                      files={files}
-                      setFiles={setFiles}
                     />
                   )}
 
                   {step === 2 && (
                     <ReviewStep
-                      studentName={studentName}
-                      contactPhone={contactPhone}
+                      firstName={firstName}
+                      surname={surname}
                       building={building}
+                      floor={floor}
                       unit={unit}
                       category={category}
-                      priority={priority}
                       description={description}
-                      files={files}
                     />
                   )}
 
@@ -235,6 +200,10 @@ export function KioskPage() {
                     </Button>
                   )}
                 </div>
+
+                <p className="border-t border-border/70 px-6 py-4 text-center text-sm text-muted-foreground sm:px-7">
+                  WI-FI and TV related issues, please contact 081 491 5304 via WhatsApp.
+                </p>
               </section>
 
               <HelpPanel />
@@ -256,7 +225,7 @@ function KioskHeader() {
             <span className="h-2 w-2 rounded-full bg-cyan-300" />
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
-            Student Residences
+            Student Accomodation
           </p>
         </div>
         <Link
@@ -279,11 +248,11 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           <Wrench className="h-9 w-9" strokeWidth={1.8} />
         </div>
         <h1 className="mt-7 text-4xl font-semibold tracking-tight text-slate-950">
-          Maintenance Query Kiosk
+          Maintenance complaints
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
-          Log a maintenance issue at the front desk terminal. A reference number will be
-          generated for follow-up at reception.
+          WI-FI and TV related issues, please contact 081 491 5304 via WhatsApp. A ref number
+          will be displayed after you submit.
         </p>
         <Button type="button" size="lg" className="mt-8 h-14 rounded-lg px-12 text-lg" onClick={onStart}>
           Start a new request
@@ -297,7 +266,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 }
 
 function StepIndicator({ step }: { step: KioskStep }) {
-  const steps = ["Room details", "Problem details", "Review"];
+  const steps = ["Student details", "Complaint details", "Review"];
   return (
     <ol className="grid gap-3 sm:grid-cols-3">
       {steps.map((label, index) => (
@@ -327,60 +296,70 @@ function StepIndicator({ step }: { step: KioskStep }) {
 }
 
 function RoomDetailsStep({
-  studentName,
-  setStudentName,
-  contactPhone,
-  setContactPhone,
+  firstName,
+  setFirstName,
+  surname,
+  setSurname,
   building,
   setBuilding,
+  floor,
+  setFloor,
   unit,
   setUnit,
 }: {
-  studentName: string;
-  setStudentName: (value: string) => void;
-  contactPhone: string;
-  setContactPhone: (value: string) => void;
-  building: Building;
-  setBuilding: (value: Building) => void;
+  firstName: string;
+  setFirstName: (value: string) => void;
+  surname: string;
+  setSurname: (value: string) => void;
+  building: ComplaintBuilding;
+  setBuilding: (value: ComplaintBuilding) => void;
+  floor: string;
+  setFloor: (value: string) => void;
   unit: string;
   setUnit: (value: string) => void;
 }) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold">Room details</h2>
+        <h2 className="text-xl font-semibold">Student details</h2>
         <p className="text-sm text-muted-foreground">
-          Tell us who is reporting the issue and where the problem is located.
+          Fields marked with * are required.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Student name" htmlFor="studentName">
+        <Field label="Name *" htmlFor="firstName">
           <Input
-            id="studentName"
-            value={studentName}
-            onChange={(e) => setStudentName(e.target.value)}
-            placeholder="e.g. John Smith"
+            id="firstName"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Enter name"
             className="h-11"
             autoFocus
           />
         </Field>
-        <Field label="Contact number" htmlFor="contactPhone">
+        <Field label="Surname *" htmlFor="surname">
           <Input
-            id="contactPhone"
-            type="tel"
-            value={contactPhone}
-            onChange={(e) => setContactPhone(e.target.value)}
-            placeholder="e.g. 071 234 5678"
+            id="surname"
+            value={surname}
+            onChange={(e) => setSurname(e.target.value)}
+            placeholder="Enter surname"
             className="h-11"
           />
         </Field>
-        <Field label="Building">
-          <Select value={building} onValueChange={(value) => setBuilding(value as Building)}>
+        <Field label="Building *">
+          <Select
+            value={building}
+            onValueChange={(value) => {
+              setBuilding(value as ComplaintBuilding);
+              setFloor("");
+              setUnit("");
+            }}
+          >
             <SelectTrigger className="h-11">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {buildings.map((item) => (
+              {buildingOptions.map((item) => (
                 <SelectItem key={item} value={item}>
                   {item}
                 </SelectItem>
@@ -388,12 +367,26 @@ function RoomDetailsStep({
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Room / Unit" htmlFor="unit">
+        <Field label="Floor *">
+          <Select value={floor || undefined} onValueChange={setFloor}>
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder="Select floor" />
+            </SelectTrigger>
+            <SelectContent>
+              {floorsForBuilding(building).map((f) => (
+                <SelectItem key={f} value={f}>
+                  {f}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="Room number (eg L002, G213 OR 0916) *" htmlFor="unit">
           <Input
             id="unit"
             value={unit}
             onChange={(e) => setUnit(e.target.value.toUpperCase())}
-            placeholder="e.g. GWH-305"
+            placeholder="e.g. L002"
             className="h-11"
           />
         </Field>
@@ -405,99 +398,65 @@ function RoomDetailsStep({
 function ProblemDetailsStep({
   category,
   setCategory,
-  priority,
-  setPriority,
   description,
   setDescription,
-  files,
-  setFiles,
 }: {
   category: RepairCategory;
   setCategory: (value: RepairCategory) => void;
-  priority: RepairPriority;
-  setPriority: (value: RepairPriority) => void;
   description: string;
   setDescription: (value: string) => void;
-  files: File[];
-  setFiles: (files: File[]) => void;
 }) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold">Problem details</h2>
+        <h2 className="text-xl font-semibold">Complaint details</h2>
         <p className="text-sm text-muted-foreground">
-          Describe the issue clearly so maintenance can route it correctly.
+          Tell us what issue you need help with.
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Problem category">
-          <Select value={category} onValueChange={(value) => setCategory(value as RepairCategory)}>
-            <SelectTrigger className="h-11">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {categoryLabels[item]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Urgency">
-          <Select value={priority} onValueChange={(value) => setPriority(value as RepairPriority)}>
-            <SelectTrigger className="h-11">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {priorities.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label} - {item.hint}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
-      <Field label="Describe the issue" htmlFor="description">
+      <Field label="Type of complaint *">
+        <Select value={category} onValueChange={(value) => setCategory(value as RepairCategory)}>
+          <SelectTrigger className="h-11">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {complaintTypeOptions.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field label="How can we help you? *" htmlFor="description">
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Example: There is a leak under the kitchen sink. Water is pooling in the cupboard."
+          placeholder="Describe your complaint clearly."
           className="min-h-[120px]"
         />
       </Field>
-      <FileUploadField
-        id="kiosk-photos"
-        files={files}
-        onChange={setFiles}
-        accept="image/*"
-        label="Add photos of the problem"
-        hint="JPG or PNG photos help maintenance assess the damage faster"
-      />
     </div>
   );
 }
 
 function ReviewStep({
-  studentName,
-  contactPhone,
+  firstName,
+  surname,
   building,
+  floor,
   unit,
   category,
-  priority,
   description,
-  files,
 }: {
-  studentName: string;
-  contactPhone: string;
+  firstName: string;
+  surname: string;
   building: Building;
+  floor: string;
   unit: string;
   category: RepairCategory;
-  priority: RepairPriority;
   description: string;
-  files: File[];
 }) {
   return (
     <div className="space-y-5">
@@ -508,15 +467,12 @@ function ReviewStep({
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <ReviewItem label="Student" value={studentName} />
-        <ReviewItem label="Contact" value={contactPhone || "Not provided"} />
-        <ReviewItem label="Location" value={`${unit} · ${building}`} />
-        <ReviewItem label="Category" value={categoryLabels[category]} />
-        <ReviewItem
-          label="Urgency"
-          value={priorities.find((item) => item.value === priority)?.label ?? priority}
-        />
-        <ReviewItem label="Photos" value={`${files.length} attached`} />
+        <ReviewItem label="Name" value={firstName} />
+        <ReviewItem label="Surname" value={surname} />
+        <ReviewItem label="Building" value={building} />
+        <ReviewItem label="Floor" value={floor} />
+        <ReviewItem label="Room number" value={unit} />
+        <ReviewItem label="Type of complaint" value={categoryLabels[category]} />
       </div>
       <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -528,18 +484,10 @@ function ReviewStep({
   );
 }
 
-function SuccessScreen({
-  repair,
-  onReset,
-  onPrint,
-}: {
-  repair: Repair;
-  onReset: () => void;
-  onPrint: () => void;
-}) {
+function SuccessScreen({ repair }: { repair: Repair }) {
   return (
     <div className="grid min-h-[calc(100dvh-8rem)] w-full place-items-center">
-      <section className="kiosk-print-receipt grid w-full max-w-5xl overflow-hidden rounded-2xl border border-border/70 bg-white shadow-lg shadow-black/5 lg:grid-cols-[1.2fr_0.8fr]">
+      <section className="kiosk-print-receipt w-full max-w-2xl overflow-hidden rounded-2xl border border-border/70 bg-white shadow-lg shadow-black/5">
         <div className="p-8 text-center sm:p-12">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-primary text-primary">
             <Check className="h-10 w-10" />
@@ -552,7 +500,7 @@ function SuccessScreen({
           </p>
 
           <div className="mx-auto mt-7 max-w-md border-y border-border/70 py-5">
-            <p className="text-sm text-muted-foreground">Reference number</p>
+            <p className="text-sm text-muted-foreground">Ref number</p>
             <p className="mt-1 font-mono text-3xl font-semibold text-primary">
               {repair.id}
             </p>
@@ -568,29 +516,6 @@ function SuccessScreen({
             <dt className="text-muted-foreground">Status:</dt>
             <dd className="font-medium text-primary">Open</dd>
           </dl>
-
-          <p className="mt-6 text-sm text-muted-foreground">
-            Please keep this reference number for follow-up at reception.
-          </p>
-          <div className="kiosk-no-print mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button type="button" className="h-11 rounded-lg" onClick={onReset}>
-              Start new request
-            </Button>
-            <Button type="button" variant="outline" className="h-11 rounded-lg" onClick={onPrint}>
-              <Printer className="mr-2 h-4 w-4" />
-              Print receipt
-            </Button>
-          </div>
-        </div>
-
-        <div className="border-t border-border/70 bg-muted/20 p-8 lg:border-l lg:border-t-0">
-          <h2 className="text-base font-semibold">Request progress</h2>
-          <ol className="mt-6 space-y-7">
-            <TimelineItem active label="Submitted" detail="Request received" />
-            <TimelineItem label="Maintenance review" detail="Pending" />
-            <TimelineItem label="Assigned to technician" detail="Pending" />
-            <TimelineItem label="Completed" detail="Pending" />
-          </ol>
         </div>
       </section>
     </div>
@@ -616,7 +541,7 @@ function HelpPanel() {
         <li>
           <p className="font-medium">Maintenance will review the request</p>
           <p className="mt-1 text-muted-foreground">
-            The team checks priority, photos, and the affected room.
+            The team reviews the complaint and assigns priority.
           </p>
         </li>
         <li>
@@ -655,34 +580,5 @@ function ReviewItem({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-1 text-sm font-medium">{value}</p>
     </div>
-  );
-}
-
-function TimelineItem({
-  active,
-  label,
-  detail,
-}: {
-  active?: boolean;
-  label: string;
-  detail: string;
-}) {
-  return (
-    <li className="flex gap-4">
-      <span
-        className={cn(
-          "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
-          active
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-border bg-white text-muted-foreground"
-        )}
-      >
-        {active ? <Check className="h-4 w-4" /> : null}
-      </span>
-      <div>
-        <p className="font-medium">{label}</p>
-        <p className="mt-0.5 text-sm text-muted-foreground">{detail}</p>
-      </div>
-    </li>
   );
 }

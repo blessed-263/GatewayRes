@@ -2,22 +2,20 @@ import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-
 import { GuestOnlyRoute, ProtectedRoute, RoleRoute } from "@/components/auth/RouteGuards";
 import { LandingRoute } from "@/components/auth/LandingRoute";
 import { AuthProvider } from "@/context/AuthContext";
+import { OperationsProvider } from "@/context/OperationsContext";
 import { RepairsProvider } from "@/context/RepairsContext";
 import { AppLayout } from "@/layouts/AppLayout";
 import { homePathForRole } from "@/lib/repairAccess";
 import { AnalyticsPage } from "@/pages/AnalyticsPage";
-import { BudgetPage } from "@/pages/BudgetPage";
-import { CalendarPage } from "@/pages/CalendarPage";
-import { DailyTasksPage } from "@/pages/DailyTasksPage";
+import { CalendarEntry } from "@/pages/CalendarEntry";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { KioskPage } from "@/pages/KioskPage";
-import { InventoryPage } from "@/pages/InventoryPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { MyJobsPage } from "@/pages/MyJobsPage";
 import { RepairDetailPage } from "@/pages/RepairDetailPage";
-import { TasksPage } from "@/pages/TasksPage";
+import { SupervisorTeamPage } from "@/pages/SupervisorTeamPage";
 import { TeamMemberPage } from "@/pages/TeamMemberPage";
-import { TeamPage } from "@/pages/TeamPage";
+import { TasksPage } from "@/pages/TasksPage";
 import { WorkerJobPage } from "@/pages/WorkerJobPage";
 import { useAuth } from "@/context/AuthContext";
 import { portalFromPath } from "@/lib/loginPortals";
@@ -47,49 +45,61 @@ function LoginPortalRoute() {
   return <LoginPage />;
 }
 
+function LegacySupervisorRedirect() {
+  return <Navigate to="/dashboard" replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <RepairsProvider>
-          <Routes>
-            <Route path="/" element={<LandingRoute />} />
-            <Route path="/kiosk" element={<KioskPage />} />
+          <OperationsProvider>
+            <Routes>
+              <Route path="/" element={<LandingRoute />} />
+              <Route path="/kiosk" element={<KioskPage />} />
 
-            <Route element={<GuestOnlyRoute />}>
-              <Route path="/login/:portal" element={<LoginPortalRoute />} />
-              <Route path="/login" element={<Navigate to="/" replace />} />
-            </Route>
-
-            <Route element={<ProtectedRoute />}>
-              <Route element={<AppLayout />}>
-                <Route path="/home" element={<HomeRedirect />} />
-
-                <Route element={<RoleRoute roles={["supervisor"]} />}>
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/daily" element={<DailyTasksPage />} />
-                  <Route path="/tasks" element={<TasksPage />} />
-                  <Route path="/analytics" element={<AnalyticsPage />} />
-                  <Route path="/budget" element={<BudgetPage />} />
-                  <Route path="/inventory" element={<InventoryPage />} />
-                  <Route path="/team" element={<TeamPage />} />
-                  <Route path="/team/:memberSlug" element={<TeamMemberPage />} />
-                </Route>
-
-                <Route element={<RoleRoute roles={["worker"]} />}>
-                  <Route path="/my-jobs" element={<MyJobsPage />} />
-                  <Route path="/my-jobs/:id" element={<WorkerJobPage />} />
-                </Route>
-
-                <Route element={<RoleRoute roles={["supervisor", "worker"]} />}>
-                  <Route path="/calendar" element={<CalendarPage />} />
-                  <Route path="/tasks/:id" element={<TaskDetailEntry />} />
-                </Route>
-
-                <Route path="*" element={<HomeRedirect />} />
+              <Route element={<GuestOnlyRoute />}>
+                <Route path="/login/:portal" element={<LoginPortalRoute />} />
+                <Route path="/login" element={<Navigate to="/" replace />} />
               </Route>
-            </Route>
-          </Routes>
+
+              <Route element={<ProtectedRoute />}>
+                <Route element={<AppLayout />}>
+                  <Route path="/home" element={<HomeRedirect />} />
+                  <Route path="/calendar" element={<CalendarEntry />} />
+
+                  <Route element={<RoleRoute roles={["supervisor"]} />}>
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/daily" element={<Navigate to="/tasks" replace />} />
+                    <Route path="/tasks" element={<TasksPage />} />
+                    <Route path="/analytics" element={<AnalyticsPage />} />
+                    <Route path="/team" element={<SupervisorTeamPage />} />
+                    <Route path="/planning" element={<LegacySupervisorRedirect />} />
+                    <Route path="/budget" element={<LegacySupervisorRedirect />} />
+                    <Route path="/inventory" element={<LegacySupervisorRedirect />} />
+                    <Route path="/properties" element={<LegacySupervisorRedirect />} />
+                    <Route path="/preventive" element={<LegacySupervisorRedirect />} />
+                    <Route path="/approvals" element={<LegacySupervisorRedirect />} />
+                    <Route path="/templates" element={<LegacySupervisorRedirect />} />
+                    <Route path="/contractors" element={<LegacySupervisorRedirect />} />
+                    <Route path="/team/:memberSlug" element={<TeamMemberPage />} />
+                  </Route>
+
+                  <Route element={<RoleRoute roles={["worker"]} />}>
+                    <Route path="/my-jobs" element={<MyJobsPage />} />
+                    <Route path="/my-jobs/:id" element={<WorkerJobPage />} />
+                  </Route>
+
+                  <Route element={<RoleRoute roles={["supervisor", "worker"]} />}>
+                    <Route path="/tasks/:id" element={<TaskDetailEntry />} />
+                  </Route>
+
+                  <Route path="*" element={<HomeRedirect />} />
+                </Route>
+              </Route>
+            </Routes>
+          </OperationsProvider>
         </RepairsProvider>
       </AuthProvider>
     </BrowserRouter>

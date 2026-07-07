@@ -29,6 +29,7 @@ import {
   statusLabels,
 } from "@/lib/repairLabels";
 import { daysOpen, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type {
   AttachmentKind,
   Building,
@@ -74,7 +75,10 @@ const actionLabels: Record<string, string> = {
   attachment_removed: "File removed",
   comment_added: "Note added",
   part_requested: "Part requested",
-  part_status_changed: "Part status updated",
+  assignment_overridden: "Assignment overridden",
+  auto_assigned: "Auto-assigned",
+  closed_by: "Closed",
+  reopened: "Reopened",
 };
 
 export function RepairDetailPage() {
@@ -202,10 +206,10 @@ export function RepairDetailPage() {
             {priorityLabels[repair.priority]}
           </Badge>
           <Badge variant="outline">{categoryLabels[repair.category]}</Badge>
-          {repair.attachmentCount ? (
+          {repair.attachmentCount && !isSupervisor ? (
             <Badge variant="secondary">{repair.attachmentCount} files</Badge>
           ) : null}
-          {repair.partRequestCount ? (
+          {repair.partRequestCount && !isSupervisor ? (
             <Badge variant="secondary">{repair.partRequestCount} parts</Badge>
           ) : null}
           {repair.status !== "completed" && (
@@ -216,15 +220,15 @@ export function RepairDetailPage() {
         </div>
 
         <Tabs defaultValue="details" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-3 sm:w-auto sm:grid-cols-5">
+          <TabsList className={cn("grid h-auto w-full sm:w-auto", isSupervisor ? "grid-cols-3" : "grid-cols-5")}>
             <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="files">Photos</TabsTrigger>
-            <TabsTrigger value="parts">Parts</TabsTrigger>
+            {!isSupervisor && <TabsTrigger value="files">Photos</TabsTrigger>}
+            {!isSupervisor && <TabsTrigger value="parts">Parts</TabsTrigger>}
             <TabsTrigger value="notes">Notes</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
-          {damagePhotos.length > 0 && (
+          {!isSupervisor && damagePhotos.length > 0 && (
             <div className="elevated-card p-4">
               <h3 className="mb-3 text-sm font-semibold">Reported damage</h3>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -409,6 +413,11 @@ export function RepairDetailPage() {
                     </SelectContent>
                   </Select>
                 </Field>
+                {repair.assignmentMode && (
+                  <p className="text-xs text-muted-foreground">
+                    Assignment: {repair.assignmentMode === "auto" ? "Auto-assigned" : "Manual override"}
+                  </p>
+                )}
                 <Field label="Scheduled date">
                   <Input
                     type="date"
@@ -421,6 +430,7 @@ export function RepairDetailPage() {
                     }}
                   />
                 </Field>
+                {!isSupervisor && (
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field label="Estimated cost (ZAR)">
                     <Input
@@ -465,10 +475,18 @@ export function RepairDetailPage() {
                     />
                   </Field>
                 </div>
+                )}
                 <div className="rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">
                   <p>Reported {formatDate(repair.reportedAt)} by {repair.reportedBy}</p>
+                  {repair.floor && <p>Floor: {repair.floor}</p>}
                   {repair.residentPhone && <p>Phone: {repair.residentPhone}</p>}
-                  {repair.completedAt && (
+                  {repair.closedBy && (
+                    <p>
+                      Closed by {repair.closedBy}
+                      {repair.completedAt ? ` · ${formatDate(repair.completedAt)}` : ""}
+                    </p>
+                  )}
+                  {repair.completedAt && !repair.closedBy && (
                     <p>Completed {formatDate(repair.completedAt)}</p>
                   )}
                   {saving && <p className="text-primary">Saving…</p>}
@@ -553,8 +571,12 @@ export function RepairDetailPage() {
             <CardContent>
               <RepairComments
                 comments={repair.comments ?? []}
+                defaultAuthor={user?.name}
+                highlightSupervisorNotes
                 onAdd={async (author, body) => {
-                  const updated = await addRepairComment(repair.id, author, body);
+                  const updated = await addRepairComment(repair.id, author, body, {
+                    isSupervisor: isRole("supervisor"),
+                  });
                   setRepair(updated);
                 }}
               />

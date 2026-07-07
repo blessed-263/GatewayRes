@@ -22,7 +22,12 @@ export const maintenanceDemo: DemoUser = {
 export const demoUsers: DemoUser[] = [supervisorDemo, maintenanceDemo];
 
 export function demoUserForRole(role: UserRole): DemoUser {
-  return role === "worker" ? maintenanceDemo : supervisorDemo;
+  switch (role) {
+    case "worker":
+      return maintenanceDemo;
+    default:
+      return supervisorDemo;
+  }
 }
 
 export function findDemoUser(username: string, password: string) {

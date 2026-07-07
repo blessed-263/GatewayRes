@@ -62,11 +62,13 @@ app.get("/api/health", (_req, res) => {
 
 app.get("/api/team", (_req, res) => {
   res.json([
-    { id: "1", name: "Sipho N.", role: "Senior Technician", active: true },
-    { id: "2", name: "Maintenance Team A", role: "General Repairs", active: true },
-    { id: "3", name: "Maintenance Team B", role: "General Repairs", active: true },
-    { id: "4", name: "External Pest Co.", role: "Contractor", active: true },
-    { id: "5", name: "Thabo M.", role: "Supervisor", active: true },
+    { id: "1", name: "Sipho N.", role: "Lead Plumber", active: true },
+    { id: "2", name: "Given K.", role: "General Technician", active: true },
+    { id: "3", name: "James M.", role: "Furniture & Fixtures", active: true },
+    { id: "4", name: "Lerato M.", role: "Electrician", active: true },
+    { id: "5", name: "Zanele R.", role: "Locks & Access", active: true },
+    { id: "6", name: "David W.", role: "Glazier", active: true },
+    { id: "7", name: "Thabo M.", role: "Supervisor", active: true },
   ]);
 });
 

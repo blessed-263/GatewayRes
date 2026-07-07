@@ -29,6 +29,8 @@ export const loginPortals: Record<
 };
 
 export function portalFromPath(segment: string | undefined): LoginPortal | null {
-  if (segment === "supervisor" || segment === "maintenance") return segment;
+  if (segment === "supervisor" || segment === "maintenance") {
+    return segment;
+  }
   return null;
 }

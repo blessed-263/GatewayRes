@@ -27,7 +27,12 @@ function loadSession(): AuthSession | null {
   try {
     const raw = localStorage.getItem(AUTH_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as AuthSession;
+    const session = JSON.parse(raw) as AuthSession & { role?: string };
+    if (session.role !== "supervisor" && session.role !== "worker") {
+      localStorage.removeItem(AUTH_KEY);
+      return null;
+    }
+    return session;
   } catch {
     return null;
   }

@@ -77,6 +77,24 @@ export function exportRepairsCsv(repairs: Repair[], label = "all") {
   ]);
 }
 
+export function exportRepairsIntervalCsv(
+  repairs: Repair[],
+  fromKey: string,
+  toKey: string
+) {
+  const exported = format(new Date(), "yyyy-MM-dd");
+  downloadCsv(`gateway-requests-${fromKey}-to-${toKey}.csv`, [
+    ["Gateway maintenance requests"],
+    ["From", fromKey],
+    ["To", toKey],
+    ["Exported", exported],
+    ["Total", String(repairs.length)],
+    [],
+    repairHeaders,
+    ...repairs.map(repairToRow),
+  ]);
+}
+
 export function exportDailyAssignmentsCsv(repairs: Repair[], day: string) {
   const dayRepairs = repairs.filter((r) => r.scheduledFor === day);
   const byAssignee = dayRepairs.reduce<Record<string, Repair[]>>((acc, r) => {

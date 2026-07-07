@@ -114,7 +114,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="mt-10 grid gap-5 md:grid-cols-3">
+        <section className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {interfaces.map((item) => {
             const Icon = item.icon;
             return (

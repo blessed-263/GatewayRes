@@ -1,13 +1,10 @@
 const supervisorPrefixes = [
   "/dashboard",
-  "/daily",
   "/tasks",
+  "/calendar",
   "/analytics",
-  "/budget",
-  "/inventory",
   "/team",
 ];
-
 export function loginPathForProtectedPath(pathname: string): string {
   if (pathname.startsWith("/my-jobs")) {
     return "/login/maintenance";

@@ -9,7 +9,7 @@ export interface NavItem {
   roles: UserRole[];
 }
 
-export const allNavItems: NavItem[] = [
+const supervisorNav: NavItem[] = [
   {
     path: "/dashboard",
     label: "Dashboard",
@@ -19,18 +19,10 @@ export const allNavItems: NavItem[] = [
     roles: ["supervisor"],
   },
   {
-    path: "/my-jobs",
-    label: "My Jobs",
-    mark: "MJ",
-    shortLabel: "Jobs",
-    mobileTab: true,
-    roles: ["worker"],
-  },
-  {
-    path: "/daily",
-    label: "Open Tasks",
-    mark: "DY",
-    shortLabel: "Open",
+    path: "/tasks",
+    label: "Tasks",
+    mark: "TK",
+    shortLabel: "Tasks",
     mobileTab: true,
     roles: ["supervisor"],
   },
@@ -39,30 +31,14 @@ export const allNavItems: NavItem[] = [
     label: "Calendar",
     mark: "CL",
     shortLabel: "Cal",
-    mobileTab: true,
-    roles: ["supervisor", "worker"],
+    mobileTab: false,
+    roles: ["supervisor"],
   },
   {
     path: "/analytics",
     label: "Analytics",
     mark: "AN",
     shortLabel: "Stats",
-    mobileTab: false,
-    roles: ["supervisor"],
-  },
-  {
-    path: "/budget",
-    label: "Budget",
-    mark: "BG",
-    shortLabel: "Budget",
-    mobileTab: false,
-    roles: ["supervisor"],
-  },
-  {
-    path: "/inventory",
-    label: "Inventory",
-    mark: "IV",
-    shortLabel: "Inventory",
     mobileTab: false,
     roles: ["supervisor"],
   },
@@ -74,6 +50,30 @@ export const allNavItems: NavItem[] = [
     mobileTab: false,
     roles: ["supervisor"],
   },
+];
+
+const workerNav: NavItem[] = [
+  {
+    path: "/my-jobs",
+    label: "My Jobs",
+    mark: "MJ",
+    shortLabel: "Jobs",
+    mobileTab: true,
+    roles: ["worker"],
+  },
+  {
+    path: "/calendar",
+    label: "Calendar",
+    mark: "CL",
+    shortLabel: "Cal",
+    mobileTab: true,
+    roles: ["worker"],
+  },
+];
+
+export const allNavItems: NavItem[] = [
+  ...supervisorNav,
+  ...workerNav,
 ];
 
 export function navForRole(role: UserRole | undefined): NavItem[] {
@@ -89,9 +89,9 @@ export function getPageTitle(pathname: string, role?: UserRole): string {
   const items = role ? navForRole(role) : allNavItems;
   const exact = items.find((item) => item.path === pathname);
   if (exact) return exact.label;
-  if (pathname === "/tasks") return "All Tasks";
   if (pathname.startsWith("/my-jobs/")) return "Job";
   if (pathname.startsWith("/tasks/")) return "Repair";
+  if (pathname.startsWith("/team/")) return "Team profile";
   const prefix = items.find(
     (item) => item.path !== "/dashboard" && pathname.startsWith(item.path)
   );

@@ -17,11 +17,14 @@ export type RepairCategory =
   | "painting"
   | "other";
 
-export type Building =
-  | "Genesis"
-  | "Lascelles"
-  | "Truman House"
-  | "Claim Street Main";
+import type { Building } from "@/data/propertyMaster";
+import type {
+  ApprovalStatus,
+  RepairQuote,
+  RepairSource,
+} from "@/types/operations";
+
+export type { Building };
 
 export type AttachmentKind = "report" | "before" | "after" | "invoice";
 
@@ -79,6 +82,8 @@ export interface RepairComment {
   author: string;
   body: string;
   createdAt: string;
+  /** When true, note is from a supervisor and shown in red to workers. */
+  isSupervisor?: boolean;
 }
 
 export interface ActivityEntry {
@@ -94,6 +99,7 @@ export interface Repair {
   id: string;
   unit: string;
   building: Building;
+  floor?: string;
   title: string;
   description: string;
   category: RepairCategory;
@@ -101,11 +107,13 @@ export interface Repair {
   priority: RepairPriority;
   reportedAt: string;
   completedAt?: string;
+  closedBy?: string;
   reportedBy: string;
   /** Name of the logged-in account that captured this request (e.g. front-desk logger, supervisor). */
   loggedBy?: string;
   residentPhone?: string;
   assignedTo?: string;
+  assignmentMode?: "auto" | "manual";
   scheduledFor?: string;
   estimated_cost?: number;
   actual_cost?: number;
@@ -118,19 +126,34 @@ export interface Repair {
   comments?: RepairComment[];
   partRequests?: PartRequest[];
   activity?: ActivityEntry[];
+  source?: RepairSource;
+  templateId?: string;
+  preventiveScheduleId?: string;
+  slaRespondBy?: string;
+  slaResolveBy?: string;
+  slaBreached?: boolean;
+  approvalStatus?: ApprovalStatus;
+  approvalRequiredBecause?: string;
+  quote?: RepairQuote;
+  contractorId?: string;
 }
 
 export interface CreateRepairInput {
   unit: string;
   building: Building;
+  floor?: string;
   title: string;
   description: string;
   category: RepairCategory;
-  priority: RepairPriority;
+  priority?: RepairPriority;
   reportedBy: string;
   loggedBy?: string;
   residentPhone?: string;
   estimated_cost?: number;
+  source?: RepairSource;
+  templateId?: string;
+  preventiveScheduleId?: string;
+  contractorId?: string;
 }
 
 export interface UpdateRepairInput {
@@ -144,9 +167,14 @@ export interface UpdateRepairInput {
   reportedBy?: string;
   residentPhone?: string;
   assignedTo?: string | null;
+  assignmentMode?: "auto" | "manual";
   scheduledFor?: string | null;
   estimated_cost?: number | null;
   actual_cost?: number | null;
   needsTools?: boolean | null;
   actor?: string;
+  quote?: import("@/types/operations").RepairQuote | null;
+  approvalStatus?: import("@/types/operations").ApprovalStatus;
+  approvalRequiredBecause?: string | null;
+  contractorId?: string | null;
 }

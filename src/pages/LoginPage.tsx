@@ -1,6 +1,5 @@
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, LayoutDashboard, Monitor, Wrench } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { demoUserForRole } from "@/data/demoUsers";
 import { useAuth } from "@/context/AuthContext";
@@ -10,10 +9,10 @@ import { homePathForRole } from "@/lib/repairAccess";
 import { loginPortals, portalFromPath } from "@/lib/loginPortals";
 import type { AuthSession } from "@/types/auth";
 
-const roleIcons: Record<"supervisor" | "worker", LucideIcon> = {
+const roleIcons = {
   supervisor: LayoutDashboard,
   worker: Wrench,
-};
+} as const;
 
 export function LoginPage() {
   const { portal: portalParam } = useParams<{ portal: string }>();
@@ -31,7 +30,7 @@ export function LoginPage() {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from;
 
-  const otherPortal = portalKey === "supervisor" ? loginPortals.maintenance : loginPortals.supervisor;
+  const otherPortals = Object.values(loginPortals).filter((p) => p.role !== portal.role);
 
   function handleLogin() {
     const session: AuthSession = {
@@ -134,18 +133,17 @@ export function LoginPage() {
                   Open student kiosk
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="w-full rounded-xl text-muted-foreground">
-                <Link to={otherPortal.path}>
-                  {portalKey === "supervisor"
-                    ? "Maintenance sign in instead"
-                    : "Supervisor sign in instead"}
-                </Link>
-              </Button>
+              {otherPortals.map((item) => (
+                <Button
+                  key={item.path}
+                  asChild
+                  variant="ghost"
+                  className="w-full rounded-xl text-muted-foreground"
+                >
+                  <Link to={item.path}>{item.title} instead</Link>
+                </Button>
+              ))}
             </div>
-
-            <p className="text-center text-[11px] text-muted-foreground">
-              All data stored locally in your browser
-            </p>
           </div>
         </div>
       </div>

@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import {
+  BarChart3,
   Calendar,
   ClipboardList,
-  Home,
   LayoutDashboard,
   Menu,
   Wrench,
@@ -14,11 +14,11 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
 const tabIcons: Record<string, LucideIcon> = {
-  "/": LayoutDashboard,
+  "/dashboard": LayoutDashboard,
   "/my-jobs": Wrench,
-  "/daily": Home,
   "/tasks": ClipboardList,
   "/calendar": Calendar,
+  "/analytics": BarChart3,
 };
 
 interface MobileBottomNavProps {

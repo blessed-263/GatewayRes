@@ -10,7 +10,12 @@ import {
 import { format } from "date-fns";
 import { initialInventory } from "@/data/mockInventory";
 import { initialRepairs } from "@/data/mockRepairs";
+import { HIGH_COST_APPROVAL_THRESHOLD } from "@/data/slaConfig";
 import { filesToAttachments } from "@/lib/fileStorage";
+import { pickRandomAssignee } from "@/lib/complaintAssignment";
+import { DEFAULT_ASSIGNEE, normalizeAssignee } from "@/lib/assigneeNames";
+import { isRemovedRepair } from "@/lib/removedRepairs";
+import { applySlaToRepair, refreshSlaBreaches } from "@/lib/sla";
 import type { InventoryItem } from "@/types/inventory";
 import type {
   ActivityEntry,
@@ -47,7 +52,12 @@ interface RepairsContextValue {
     uploadedBy?: string
   ) => Promise<Repair>;
   removeRepairAttachment: (repairId: string, attachmentId: string) => Promise<Repair>;
-  addRepairComment: (repairId: string, author: string, body: string) => Promise<Repair>;
+  addRepairComment: (
+    repairId: string,
+    author: string,
+    body: string,
+    options?: { isSupervisor?: boolean }
+  ) => Promise<Repair>;
   addPartRequest: (
     repairId: string,
     input: CreatePartRequestInput,
@@ -78,14 +88,34 @@ interface RepairsContextValue {
 
 const RepairsContext = createContext<RepairsContextValue | null>(null);
 
+function migrateRepairAssignees(repairs: Repair[]): Repair[] {
+  return repairs.map((repair) => ({
+    ...repair,
+    assignedTo: normalizeAssignee(repair.assignedTo),
+    partRequests: repair.partRequests?.map((part) => ({
+      ...part,
+      requestedBy: normalizeAssignee(part.requestedBy) ?? part.requestedBy,
+    })),
+    activity: repair.activity?.map((entry) => ({
+      ...entry,
+      actor: normalizeAssignee(entry.actor) ?? entry.actor,
+    })),
+  }));
+}
+
 function loadRepairs(): Repair[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved) as Repair[];
+    if (saved) {
+      const parsed = migrateRepairAssignees(
+        (JSON.parse(saved) as Repair[]).filter((r) => !isRemovedRepair(r))
+      );
+      return refreshSlaBreaches(parsed);
+    }
   } catch {
     /* fall through */
   }
-  return initialRepairs;
+  return refreshSlaBreaches(initialRepairs);
 }
 
 function loadInventory(): InventoryItem[] {
@@ -150,6 +180,13 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
   }, [repairs]);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setRepairs((prev) => refreshSlaBreaches(prev));
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(inventoryItems));
   }, [inventoryItems]);
 
@@ -185,26 +222,49 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
             patch.actual_cost === null ? undefined : patch.actual_cost ?? r.actual_cost,
           needsTools:
             patch.needsTools === null ? undefined : patch.needsTools ?? r.needsTools,
+          quote: patch.quote === null ? undefined : patch.quote ?? r.quote,
+          approvalStatus: patch.approvalStatus ?? r.approvalStatus,
+          approvalRequiredBecause:
+            patch.approvalRequiredBecause === null
+              ? undefined
+              : patch.approvalRequiredBecause ?? r.approvalRequiredBecause,
+          contractorId:
+            patch.contractorId === null ? undefined : patch.contractorId ?? r.contractorId,
           updatedAt: now,
         };
 
-        if (patch.status === "completed" && !next.completedAt) {
-          next.completedAt = now;
-        }
-        if (patch.status && patch.status !== "completed" && r.completedAt) {
+        const actor = patch.actor ?? "Staff";
+
+        if (patch.status === "completed") {
+          if (!next.completedAt) next.completedAt = now;
+          next.closedBy = actor;
+        } else if (r.status === "completed" && patch.status) {
           next.completedAt = undefined;
+          next.closedBy = undefined;
         }
 
-        const actor = patch.actor ?? "Staff";
         if (patch.status && patch.status !== r.status) {
           next.activity = logActivity(
             next,
-            "status_changed",
-            `${r.status} → ${patch.status}`,
+            patch.status === "completed" ? "closed_by" : r.status === "completed" ? "reopened" : "status_changed",
+            patch.status === "completed"
+              ? `Closed by ${actor}`
+              : r.status === "completed"
+                ? "Reopened from completed"
+                : `${r.status} → ${patch.status}`,
             actor
           );
         }
         if (patch.assignedTo !== undefined && patch.assignedTo !== r.assignedTo) {
+          if (r.assignmentMode === "auto" && patch.assignedTo) {
+            next.assignmentMode = "manual";
+            next.activity = logActivity(
+              next,
+              "assignment_overridden",
+              `Reassigned to ${patch.assignedTo}`,
+              actor
+            );
+          }
           next.activity = logActivity(
             next,
             "assigned",
@@ -246,22 +306,42 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
         attachments = await filesToAttachments(id, files, "report", input.reportedBy);
       }
 
-      const repair = withCounts({
+      const assignee = pickRandomAssignee(input.category);
+
+      let repair = withCounts({
         id,
         ...input,
+        priority: input.priority ?? "medium",
         status: "open",
         reportedAt: now,
         updatedAt: now,
+        assignedTo: assignee,
+        assignmentMode: assignee ? "auto" : undefined,
         attachments,
         comments: [],
         partRequests: [],
-        activity: logActivity(
-          { id } as Repair,
-          "created",
-          input.title,
-          input.reportedBy
-        ),
+        approvalStatus:
+          (input.estimated_cost ?? 0) >= HIGH_COST_APPROVAL_THRESHOLD ? "pending" : "none",
+        approvalRequiredBecause:
+          (input.estimated_cost ?? 0) >= HIGH_COST_APPROVAL_THRESHOLD
+            ? "Estimated cost exceeds approval threshold"
+            : undefined,
+        activity: [
+          logActivity({ id } as Repair, "created", input.title, input.reportedBy)[0],
+          ...(assignee
+            ? [
+                logActivity(
+                  { id } as Repair,
+                  "auto_assigned",
+                  `Auto-assigned to ${assignee}`,
+                  "System"
+                )[0],
+              ]
+            : []),
+        ],
       });
+
+      repair = applySlaToRepair(repair, now);
 
       setRepairs((prev) => [repair, ...prev]);
       return repair;
@@ -274,7 +354,7 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
       const existing = repairs.find((r) => r.id === id);
       const patch: UpdateRepairInput = { status, actor };
       if (status === "in_progress" && existing && !existing.assignedTo) {
-        patch.assignedTo = "Maintenance Team A";
+        patch.assignedTo = DEFAULT_ASSIGNEE;
       }
       await updateRepair(id, patch);
     },
@@ -286,6 +366,7 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
       const existing = repairs.find((r) => r.id === id);
       const patch: UpdateRepairInput = {
         assignedTo: assignedTo ?? null,
+        assignmentMode: assignedTo ? "manual" : undefined,
         actor: "Supervisor",
       };
       if (
@@ -378,7 +459,12 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
   );
 
   const addRepairComment = useCallback(
-    async (repairId: string, author: string, body: string) => {
+    async (
+      repairId: string,
+      author: string,
+      body: string,
+      options?: { isSupervisor?: boolean }
+    ) => {
       let updated!: Repair;
       setRepairs((prev) =>
         prev.map((r) => {
@@ -389,6 +475,7 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
             author,
             body,
             createdAt: new Date().toISOString(),
+            isSupervisor: options?.isSupervisor,
           };
           const next = withCounts({
             ...r,

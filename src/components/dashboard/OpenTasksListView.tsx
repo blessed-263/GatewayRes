@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRepairs } from "@/context/RepairsContext";
+import { buildingNames } from "@/data/propertyMaster";
 import { statusLabels } from "@/lib/repairLabels";
 import type { Building, RepairStatus } from "@/types/repair";
 
@@ -78,10 +79,11 @@ export function OpenTasksListView({ initialStatusFilter = "open" }: OpenTasksLis
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All buildings</SelectItem>
-              <SelectItem value="Genesis">Genesis</SelectItem>
-              <SelectItem value="Lascelles">Lascelles</SelectItem>
-              <SelectItem value="Truman House">Truman House</SelectItem>
-              <SelectItem value="Claim Street Main">Claim Street Main</SelectItem>
+              {buildingNames.map((name) => (
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
