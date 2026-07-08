@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RepairComments } from "@/components/dashboard/RepairComments";
+import { StatusChangeConfirmDialog } from "@/components/dashboard/StatusChangeConfirmDialog";
 import { TaskWorkTimer } from "@/components/dashboard/TaskWorkTimer";
 import { useAuth } from "@/context/AuthContext";
 import { useRepairs } from "@/context/RepairsContext";
@@ -27,11 +28,12 @@ export function WorkerJobPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { getRepairById, updateRepairStatus, addRepairComment, startWorkSession, endWorkSession } =
-    useRepairs();
+  const { getRepairById, updateRepairStatus, addRepairComment } = useRepairs();
 
   const [repair, setRepair] = useState<Repair | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<RepairStatus | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -57,20 +59,31 @@ export function WorkerJobPage() {
     );
   }
 
-  async function setStatus(status: RepairStatus) {
+  const job = repair;
+  const workerName = user.assigneeName ?? user.name;
+
+  function requestStatusChange(status: RepairStatus) {
+    if (status === job.status) return;
+    setPendingStatus(status);
+    setConfirmOpen(true);
+  }
+
+  async function confirmStatusChange() {
+    if (!pendingStatus) return;
     setSaving(true);
     try {
-      await updateRepairStatus(repair!.id, status, workerName);
-      setRepair(getRepairById(repair!.id) ?? null);
+      await updateRepairStatus(job.id, pendingStatus, workerName);
+      setRepair(getRepairById(job.id) ?? null);
+      setConfirmOpen(false);
+      setPendingStatus(null);
     } finally {
       setSaving(false);
     }
   }
 
-  const workerName = user.assigneeName ?? user.name;
   const floor =
-    repair.floor ??
-    repair.residentPhone?.replace(/^Floor\s+/i, "") ??
+    job.floor ??
+    job.residentPhone?.replace(/^Floor\s+/i, "") ??
     "—";
 
   return (
@@ -137,18 +150,7 @@ export function WorkerJobPage() {
           </dl>
         </section>
 
-        <TaskWorkTimer
-          repair={repair}
-          workerName={workerName}
-          onStart={async () => {
-            const updated = await startWorkSession(repair.id, workerName);
-            setRepair(updated);
-          }}
-          onEnd={async () => {
-            const updated = await endWorkSession(repair.id, workerName);
-            setRepair(updated);
-          }}
-        />
+        <TaskWorkTimer repair={repair} />
 
         <section className="rounded-2xl border border-border/70 bg-card p-5">
           <h2 className="mb-4 text-sm font-semibold">Status</h2>
@@ -160,7 +162,7 @@ export function WorkerJobPage() {
                   key={opt.value}
                   type="button"
                   disabled={saving}
-                  onClick={() => void setStatus(opt.value)}
+                  onClick={() => requestStatusChange(opt.value)}
                   className={cn(
                     "flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors",
                     selected
@@ -196,6 +198,19 @@ export function WorkerJobPage() {
           />
         </section>
       </main>
+
+      <StatusChangeConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          setConfirmOpen(open);
+          if (!open) setPendingStatus(null);
+        }}
+        from={repair.status}
+        to={pendingStatus}
+        jobTitle={repair.title}
+        loading={saving}
+        onConfirm={() => void confirmStatusChange()}
+      />
     </div>
   );
 }

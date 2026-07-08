@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { statCardWash, type StatColor } from "@/lib/cardAccents";
+import type { StatColor } from "@/lib/cardAccents";
 import { cn } from "@/lib/utils";
 
 const tileStyles: Record<StatColor, string> = {
@@ -39,12 +39,7 @@ export function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
     >
-      <Card
-        className={cn(
-          "min-h-36 rounded-[1.35rem] border-border/70 p-6 transition-shadow duration-300 hover:shadow-md",
-          statCardWash[color]
-        )}
-      >
+      <Card className="min-h-36 rounded-[1.35rem] border-border/70 p-6 transition-shadow duration-300 hover:shadow-md">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2.5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">

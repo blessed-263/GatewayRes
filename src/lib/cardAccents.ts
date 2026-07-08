@@ -39,16 +39,3 @@ export const workerFilterAccents: Record<WorkerFilter, FilterCardAccent> = {
 };
 
 export type StatColor = "primary" | "secondary" | "success" | "warning" | "danger";
-
-export const statCardWash: Record<StatColor, string> = {
-  primary:
-    "border-l-4 border-l-primary bg-gradient-to-br from-primary/[0.09] via-card to-card shadow-sm shadow-primary/5",
-  secondary:
-    "border-l-4 border-l-sky-500 bg-gradient-to-br from-sky-50/90 via-card to-card shadow-sm shadow-sky-500/5 dark:from-sky-950/25",
-  success:
-    "border-l-4 border-l-primary bg-gradient-to-br from-primary/[0.09] via-card to-card shadow-sm shadow-primary/5",
-  warning:
-    "border-l-4 border-l-amber-500 bg-gradient-to-br from-amber-50/90 via-card to-card shadow-sm shadow-amber-500/5 dark:from-amber-950/25",
-  danger:
-    "border-l-4 border-l-red-500 bg-gradient-to-br from-red-50/90 via-card to-card shadow-sm shadow-red-500/5 dark:from-red-950/25",
-};

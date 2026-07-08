@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RepairAttachments } from "@/components/dashboard/RepairAttachments";
 import { RepairComments } from "@/components/dashboard/RepairComments";
 import { RepairPartRequests } from "@/components/dashboard/RepairPartRequests";
+import { StatusChangeConfirmDialog } from "@/components/dashboard/StatusChangeConfirmDialog";
 import { TaskWorkTimer } from "@/components/dashboard/TaskWorkTimer";
 import { assignableMembers } from "@/data/teamMembers";
 import { useAuth } from "@/context/AuthContext";
@@ -107,6 +108,8 @@ export function RepairDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<RepairStatus | null>(null);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -167,6 +170,21 @@ export function RepairDetailPage() {
       a.mimeType.startsWith("image/") &&
       (a.kind === "report" || a.kind === "before")
   );
+
+  const job = repair;
+
+  async function confirmStatusChange() {
+    if (!pendingStatus) return;
+    setSaving(true);
+    try {
+      await updateRepairStatus(job.id, pendingStatus, user?.name ?? "Staff");
+      setRepair(getRepairById(job.id) ?? null);
+      setConfirmOpen(false);
+      setPendingStatus(null);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <>
@@ -376,9 +394,9 @@ export function RepairDetailPage() {
                     value={repair.status}
                     onValueChange={(v) => {
                       const status = v as RepairStatus;
-                      void updateRepairStatus(repair.id, status).then(() =>
-                        setRepair(getRepairById(repair.id) ?? null)
-                      );
+                      if (status === repair.status) return;
+                      setPendingStatus(status);
+                      setConfirmOpen(true);
                     }}
                   >
                     <SelectTrigger>
@@ -498,18 +516,7 @@ export function RepairDetailPage() {
             </Card>
           </div>
 
-          <TaskWorkTimer
-            className="mt-6"
-            repair={repair}
-            workerName={
-              repair.assignedTo ??
-              repair.workSessions?.[0]?.workerName ??
-              "Technician"
-            }
-            readOnly
-            onStart={async () => {}}
-            onEnd={async () => {}}
-          />
+          <TaskWorkTimer className="mt-6" repair={repair} />
           </TabsContent>
 
           <TabsContent value="files">
@@ -642,6 +649,19 @@ export function RepairDetailPage() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <StatusChangeConfirmDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          setConfirmOpen(open);
+          if (!open) setPendingStatus(null);
+        }}
+        from={repair.status}
+        to={pendingStatus}
+        jobTitle={repair.title}
+        loading={saving}
+        onConfirm={() => void confirmStatusChange()}
+      />
     </>
   );
 }

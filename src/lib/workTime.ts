@@ -72,3 +72,7 @@ export function formatGapLabel(gapSeconds: number) {
   if (gapSeconds <= 0) return "Started immediately";
   return `${formatWorkDuration(gapSeconds)} since last job`;
 }
+
+export function isBackgroundTimerRunning(repair: Repair) {
+  return repair.status === "in_progress" && Boolean(activeSession(repair));
+}

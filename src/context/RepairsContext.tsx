@@ -86,8 +86,6 @@ interface RepairsContextValue {
     picked: boolean,
     actor?: string
   ) => Promise<Repair>;
-  startWorkSession: (repairId: string, workerName: string) => Promise<Repair>;
-  endWorkSession: (repairId: string, workerName: string) => Promise<Repair>;
 }
 
 const RepairsContext = createContext<RepairsContextValue | null>(null);
@@ -200,6 +198,56 @@ function endOpenWorkSessions(
   return { ...next, workSessions: nextSessions };
 }
 
+function startWorkSessionOnRepair(
+  repair: Repair,
+  allRepairs: Repair[],
+  workerName: string,
+  now: string
+): Repair {
+  const sessions = repair.workSessions ?? [];
+  if (sessions.some((session) => !session.endedAt)) return repair;
+
+  const gapBeforeSeconds = gapBeforeStartSeconds(allRepairs, workerName, now);
+  const session: WorkTimeSession = {
+    id: crypto.randomUUID(),
+    workerName,
+    startedAt: now,
+    gapBeforeSeconds: gapBeforeSeconds > 0 ? gapBeforeSeconds : undefined,
+  };
+
+  return {
+    ...repair,
+    workSessions: [...sessions, session],
+    activity: logActivity(
+      repair,
+      "work_timer_started",
+      gapBeforeSeconds > 0
+        ? `Started after ${gapBeforeSeconds}s gap`
+        : "Work timer started (In Progress)",
+      workerName
+    ),
+  };
+}
+
+function endWorkerActiveSessionsElsewhere(
+  repairs: Repair[],
+  targetRepairId: string,
+  workerName: string,
+  now: string
+): Repair[] {
+  return repairs.map((repair) => {
+    if (repair.id === targetRepairId) return repair;
+    const sessions = repair.workSessions ?? [];
+    const open = sessions.find(
+      (session) => !session.endedAt && session.workerName === workerName
+    );
+    if (!open) return repair;
+    return withCounts(
+      endOpenWorkSessions(repair, now, workerName, "Auto-ended (another job started)")
+    );
+  });
+}
+
 export function RepairsProvider({ children }: { children: ReactNode }) {
   const [repairs, setRepairs] = useState<Repair[]>(() =>
     loadRepairs().map(withCounts)
@@ -241,10 +289,22 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
 
   const updateRepair = useCallback(async (id: string, patch: UpdateRepairInput) => {
     let updated!: Repair;
-    setRepairs((prev) =>
-      prev.map((r) => {
+    setRepairs((prev) => {
+      const current = prev.find((repair) => repair.id === id);
+      if (!current) return prev;
+
+      const now = new Date().toISOString();
+      const actor = patch.actor ?? "Staff";
+
+      let list = prev;
+      if (patch.status === "in_progress" && current.status !== "in_progress") {
+        const timerWorker = (patch.assignedTo ?? current.assignedTo) ?? actor;
+        list = endWorkerActiveSessionsElsewhere(prev, id, timerWorker, now);
+      }
+
+      return list.map((r) => {
         if (r.id !== id) return r;
-        const now = new Date().toISOString();
+
         let next: Repair = {
           ...r,
           ...patch,
@@ -268,7 +328,7 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
           updatedAt: now,
         };
 
-        const actor = patch.actor ?? "Staff";
+        const timerWorker = next.assignedTo ?? actor;
 
         if (patch.status === "completed") {
           if (!next.completedAt) next.completedAt = now;
@@ -277,6 +337,17 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
         } else if (r.status === "completed" && patch.status) {
           next.completedAt = undefined;
           next.closedBy = undefined;
+        }
+
+        if (patch.status === "in_progress" && r.status !== "in_progress") {
+          next = startWorkSessionOnRepair(next, prev, timerWorker, now);
+        } else if (
+          r.status === "in_progress" &&
+          patch.status &&
+          patch.status !== "in_progress" &&
+          patch.status !== "completed"
+        ) {
+          next = endOpenWorkSessions(next, now, actor, "Stopped on status change");
         }
 
         if (patch.status && patch.status !== r.status) {
@@ -327,8 +398,8 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
 
         updated = withCounts(next);
         return updated;
-      })
-    );
+      });
+    });
     return updated;
   }, []);
 
@@ -750,122 +821,6 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const startWorkSession = useCallback(
-    async (repairId: string, workerName: string) => {
-      let updated!: Repair;
-      setRepairs((prev) => {
-        const now = new Date().toISOString();
-        const gapBeforeSeconds = gapBeforeStartSeconds(prev, workerName, now);
-
-        const withEndedOthers = prev.map((repair) => {
-          const sessions = repair.workSessions ?? [];
-          const open = sessions.find(
-            (session) => !session.endedAt && session.workerName === workerName
-          );
-          if (!open) return repair;
-          const endedSessions = sessions.map((session) =>
-            session.id === open.id ? { ...session, endedAt: now } : session
-          );
-          return withCounts({
-            ...repair,
-            workSessions: endedSessions,
-            updatedAt: now,
-            activity: logActivity(
-              repair,
-              "work_timer_stopped",
-              "Auto-ended after starting another job",
-              workerName
-            ),
-          });
-        });
-
-        return withEndedOthers.map((repair) => {
-          if (repair.id !== repairId) return repair;
-          const sessions = repair.workSessions ?? [];
-          if (sessions.some((session) => !session.endedAt)) {
-            updated = repair;
-            return repair;
-          }
-
-          const session: WorkTimeSession = {
-            id: crypto.randomUUID(),
-            workerName,
-            startedAt: now,
-            gapBeforeSeconds: gapBeforeSeconds > 0 ? gapBeforeSeconds : undefined,
-          };
-
-          let next: Repair = withCounts({
-            ...repair,
-            workSessions: [...sessions, session],
-            updatedAt: now,
-            activity: logActivity(
-              repair,
-              "work_timer_started",
-              gapBeforeSeconds > 0
-                ? `Started after ${gapBeforeSeconds}s gap`
-                : "Work timer started",
-              workerName
-            ),
-          });
-
-          if (next.status === "open") {
-            next = {
-              ...next,
-              status: "in_progress",
-              activity: logActivity(next, "status_changed", "open → in_progress", workerName),
-            };
-          }
-
-          updated = next;
-          return next;
-        });
-      });
-      return updated;
-    },
-    []
-  );
-
-  const endWorkSession = useCallback(async (repairId: string, workerName: string) => {
-    let updated!: Repair;
-    setRepairs((prev) =>
-      prev.map((repair) => {
-        if (repair.id !== repairId) return repair;
-        const sessions = repair.workSessions ?? [];
-        const open = sessions.find(
-          (session) => !session.endedAt && session.workerName === workerName
-        );
-        if (!open) {
-          updated = repair;
-          return repair;
-        }
-
-        const now = new Date().toISOString();
-        const nextSessions = sessions.map((session) =>
-          session.id === open.id ? { ...session, endedAt: now } : session
-        );
-        const durationSec = Math.max(
-          0,
-          Math.round((new Date(now).getTime() - new Date(open.startedAt).getTime()) / 1000)
-        );
-
-        const next = withCounts({
-          ...repair,
-          workSessions: nextSessions,
-          updatedAt: now,
-          activity: logActivity(
-            repair,
-            "work_timer_stopped",
-            `Worked ${durationSec}s on this job`,
-            workerName
-          ),
-        });
-        updated = next;
-        return next;
-      })
-    );
-    return updated;
-  }, []);
-
   const value = useMemo(
     () => ({
       repairs,
@@ -888,8 +843,6 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
       restockInventoryItem,
       allocatePartRequestFromInventory,
       markPartPickedForDay,
-      startWorkSession,
-      endWorkSession,
     }),
     [
       repairs,
@@ -912,8 +865,6 @@ export function RepairsProvider({ children }: { children: ReactNode }) {
       restockInventoryItem,
       allocatePartRequestFromInventory,
       markPartPickedForDay,
-      startWorkSession,
-      endWorkSession,
     ]
   );
 
