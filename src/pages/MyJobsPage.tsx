@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Clock, Package, ClipboardList, ListTodo } from "lucide-react";
 import { TaskThumbnailCard } from "@/components/dashboard/TaskThumbnailCard";
+import { WorkerProfileHero } from "@/components/dashboard/WorkerProfileHero";
 import { useAuth } from "@/context/AuthContext";
 import { useRepairs } from "@/context/RepairsContext";
 import { repairsForUser } from "@/lib/repairAccess";
@@ -45,17 +46,11 @@ export function MyJobsPage() {
   );
 
   const grouped = useMemo(() => groupJobsByBuildingAndFloor(filtered), [filtered]);
-  const firstName = user?.name?.split(" ")[0] ?? "there";
+  const workerName = user?.assigneeName ?? user?.name ?? "";
 
   return (
     <div className="flex flex-1 flex-col space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
-      <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/75">
-          My jobs
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Hi, {firstName}</h1>
-        <p className="mt-2 text-sm text-white/80">Tap a card to filter what needs to be done.</p>
-      </section>
+      <WorkerProfileHero workerName={workerName} />
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {filters.map((f) => {

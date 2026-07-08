@@ -7,11 +7,8 @@ import {
   Clock,
   Package,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { TaskThumbnailCard } from "@/components/dashboard/TaskThumbnailCard";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRepairs } from "@/context/RepairsContext";
 import { getDepartmentInfo, getTeamProfileBySlug } from "@/data/teamProfiles";
 import {
@@ -36,55 +33,41 @@ export function TeamMemberPage() {
   const historyTasks = recentHistoryForWorker(repairs, member.name);
 
   return (
-    <>
-      <PageHeader
-        title={member.name}
-        description={`${department?.label ?? member.role} · ${member.workType}`}
-        actions={
-          <Link to="/team" className="text-sm font-semibold text-primary hover:underline">
+    <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
+      <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground sm:px-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/75">
+              {department?.label ?? "Team member"}
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{member.name}</h1>
+            <p className="mt-2 text-lg font-medium text-white/95">{member.role}</p>
+            <p className="mt-1 text-base text-white/85">{member.workType}</p>
+            <p className="mt-4 text-sm text-white/75">
+              Joined {format(parseISO(member.joinedAt), "d MMM yyyy")} ·{" "}
+              {member.buildings.join(" · ")}
+            </p>
+          </div>
+          <Link
+            to="/team"
+            className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+          >
             ← Back to team
           </Link>
-        }
-      />
-      <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
-        <section className="rounded-[1.75rem] border border-border/70 bg-card p-6 sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex gap-5">
-              <Avatar className="h-20 w-20 rounded-2xl border-2 border-background shadow-sm">
-                <AvatarImage src={member.avatarUrl} alt={member.name} className="object-cover" />
-                <AvatarFallback className="rounded-2xl bg-primary/10 text-xl font-bold text-primary">
-                  {member.name
-                    .split(" ")
-                    .map((word) => word[0])
-                    .join("")
-                    .slice(0, 2)
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <Badge variant="secondary" className="mb-2">
-                  {department?.label}
-                </Badge>
-                <h2 className="text-2xl font-semibold tracking-tight">{member.name}</h2>
-                <p className="mt-1 text-sm font-medium text-foreground/85">{member.role}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{member.workType}</p>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  Joined {format(parseISO(member.joinedAt), "dd MMM yyyy")} ·{" "}
-                  {member.buildings.join(" · ")}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {member.skills.map((skill) => (
-              <Badge key={skill} variant="outline" className="rounded-lg">
-                {skill}
-              </Badge>
-            ))}
-          </div>
-        </section>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {member.skills.map((skill) => (
+            <span
+              key={skill}
+              className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-semibold text-white"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      </section>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             title="Active assignments"
             value={analytics.assignedActive}
@@ -210,7 +193,6 @@ export function TeamMemberPage() {
           )}
         </section>
       </main>
-    </>
   );
 }
 

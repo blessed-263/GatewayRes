@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { AlertTriangle, ClipboardList, UserCheck, Users } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import {
   TeamMemberCard,
@@ -71,26 +70,15 @@ export function TeamPage() {
   ).length;
 
   return (
-    <>
-      <PageHeader
-        title="Team"
-        description="Browse by department, open a profile, and review assigned tasks and worker analytics."
-      />
-      <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
-        <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground sm:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/75">
-            Departments & workload
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Your maintenance teams
-          </h2>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-white/85">
-            Select a department, then open a team member to see profile details,
-            live assignments, and task analytics.
-          </p>
-        </section>
+    <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
+      <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground sm:px-8">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Team</h1>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-white/85">
+          Browse by department, open a profile, and review assigned tasks and worker analytics.
+        </p>
+      </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard
             title="Team members"
             value={teamProfiles.length}
@@ -200,6 +188,5 @@ export function TeamPage() {
             : ""}
         </p>
       </main>
-    </>
   );
 }

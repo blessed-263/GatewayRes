@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { TaskThumbnailCard } from "@/components/dashboard/TaskThumbnailCard";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { useRepairs } from "@/context/RepairsContext";
 import { complaintLabelForCategory, complaintTypeOptions } from "@/lib/complaintTypes";
 import {
@@ -106,13 +105,15 @@ export function TasksPage() {
   }
 
   return (
-    <>
-      <PageHeader
-        title="Tasks"
-        description="Filter by assignment, status, and due date. Grouped by complaint type."
-      />
-      <main className="flex-1 space-y-6 p-5 sm:p-8 lg:p-10">
-        <section className="flex gap-2 overflow-x-auto pb-1">
+    <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
+      <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground sm:px-8">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Tasks</h1>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-white/85">
+          Filter by assignment, status, and due date. Grouped by complaint type.
+        </p>
+      </section>
+
+      <section className="flex gap-2 overflow-x-auto pb-1">
           {supervisorTaskFilters.map((item) => {
             const active = activeFilter === item.id;
             return (
@@ -182,7 +183,6 @@ export function TasksPage() {
             )}
           </section>
         ))}
-      </main>
-    </>
+    </main>
   );
 }

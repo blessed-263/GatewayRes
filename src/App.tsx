@@ -75,6 +75,7 @@ export default function App() {
                     <Route path="/tasks" element={<TasksPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/team" element={<SupervisorTeamPage />} />
+                    <Route path="/team/:memberSlug" element={<TeamMemberPage />} />
                     <Route path="/planning" element={<LegacySupervisorRedirect />} />
                     <Route path="/budget" element={<LegacySupervisorRedirect />} />
                     <Route path="/inventory" element={<LegacySupervisorRedirect />} />
@@ -83,7 +84,6 @@ export default function App() {
                     <Route path="/approvals" element={<LegacySupervisorRedirect />} />
                     <Route path="/templates" element={<LegacySupervisorRedirect />} />
                     <Route path="/contractors" element={<LegacySupervisorRedirect />} />
-                    <Route path="/team/:memberSlug" element={<TeamMemberPage />} />
                   </Route>
 
                   <Route element={<RoleRoute roles={["worker"]} />}>

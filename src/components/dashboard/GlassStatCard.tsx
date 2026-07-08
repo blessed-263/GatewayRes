@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface GlassStatCardProps {
@@ -12,6 +13,8 @@ interface GlassStatCardProps {
   };
   tone?: "light" | "dark" | "frosted";
   className?: string;
+  to?: string;
+  hint?: string;
 }
 
 export function GlassStatCard({
@@ -21,44 +24,61 @@ export function GlassStatCard({
   trend,
   tone = "light",
   className,
+  to,
+  hint,
 }: GlassStatCardProps) {
   const isLight = tone === "light";
   const isFrosted = tone === "frosted";
 
-  if (isFrosted) {
-    return (
-      <div
-        className={cn(
-          "flex flex-col gap-3 rounded-2xl border border-white/40 bg-white/85 p-4 shadow-lg shadow-black/10 backdrop-blur-md dark:border-white/10 dark:bg-card/85",
-          className
-        )}
-      >
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+  const frostedBody = (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
           <Icon className="h-5 w-5" />
         </span>
-        <div>
-          <p className="text-3xl font-semibold tabular-nums text-foreground">
-            {value}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">{label}</p>
-        </div>
-        {trend && (
-          <span
-            className={cn(
-              "flex items-center gap-1 text-xs font-medium",
-              trend.direction === "up" ? "text-emerald-600" : "text-red-600"
-            )}
-          >
-            {trend.direction === "up" ? (
-              <ArrowUpRight className="h-3 w-3" />
-            ) : (
-              <ArrowDownRight className="h-3 w-3" />
-            )}
-            {trend.value} from last month
-          </span>
-        )}
+        {to ? (
+          <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/50 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+        ) : null}
       </div>
+      <div>
+        <p className="text-3xl font-semibold tabular-nums text-foreground">{value}</p>
+        <p className="mt-1 text-sm font-medium text-foreground/90">{label}</p>
+        {hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null}
+      </div>
+      {trend && (
+        <span
+          className={cn(
+            "flex items-center gap-1 text-xs font-medium",
+            trend.direction === "up" ? "text-emerald-600" : "text-red-600"
+          )}
+        >
+          {trend.direction === "up" ? (
+            <ArrowUpRight className="h-3 w-3" />
+          ) : (
+            <ArrowDownRight className="h-3 w-3" />
+          )}
+          {trend.value} from last month
+        </span>
+      )}
+    </>
+  );
+
+  if (isFrosted) {
+    const cardClass = cn(
+      "flex flex-col gap-3 rounded-2xl border border-white/40 bg-white/85 p-4 shadow-lg shadow-black/10 backdrop-blur-md transition-all dark:border-white/10 dark:bg-card/85",
+      to && "group hover:-translate-y-0.5 hover:border-white/70 hover:bg-white/95 hover:shadow-xl hover:shadow-black/15",
+      className
     );
+
+    if (to) {
+      return (
+        <Link to={to} className={cardClass}>
+          {frostedBody}
+        </Link>
+      );
+    }
+
+    return <div className={cardClass}>{frostedBody}</div>;
   }
 
   return (

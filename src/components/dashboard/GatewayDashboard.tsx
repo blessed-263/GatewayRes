@@ -4,27 +4,77 @@ import {
   AlertCircle,
   CheckCircle2,
   ClipboardList,
-  ListTodo,
+  Clock,
+  Package,
+  UserCheck,
+  UserX,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { RequestsByDayPanel } from "@/components/dashboard/RequestsByDayPanel";
 import { GlassStatCard } from "@/components/dashboard/GlassStatCard";
-import { TaskThumbnailCard } from "@/components/dashboard/TaskThumbnailCard";
 import { useAuth } from "@/context/AuthContext";
 import { useRepairs } from "@/context/RepairsContext";
 import {
   countByComplaintType,
-  countKpis,
   rankWorkersByClosed,
   rankWorkersByOpen,
 } from "@/lib/dashboardMetrics";
 import { images } from "@/lib/images";
+import {
+  matchesSupervisorTaskFilter,
+  type SupervisorTaskFilter,
+} from "@/lib/taskFilters";
 import { cn } from "@/lib/utils";
 
-export type DashboardFocus = "full" | "calendar" | "team";
+export type DashboardFocus = "full" | "calendar";
 
 interface GatewayDashboardProps {
   focus?: DashboardFocus;
 }
+
+const heroTaskCards: {
+  filter: SupervisorTaskFilter;
+  label: string;
+  hint: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    filter: "pending",
+    label: "Open tasks",
+    hint: "Pending & in progress",
+    icon: ClipboardList,
+  },
+  {
+    filter: "unassigned",
+    label: "Unassigned",
+    hint: "Needs a technician",
+    icon: UserX,
+  },
+  {
+    filter: "awaiting_stock",
+    label: "Awaiting stock",
+    hint: "Waiting on parts",
+    icon: Package,
+  },
+  {
+    filter: "past_due",
+    label: "Past due",
+    hint: "Overdue schedule or SLA",
+    icon: Clock,
+  },
+  {
+    filter: "assigned",
+    label: "Assigned",
+    hint: "With a technician",
+    icon: UserCheck,
+  },
+  {
+    filter: "completed",
+    label: "Completed",
+    hint: "Closed tasks",
+    icon: CheckCircle2,
+  },
+];
 
 function greetingForHour(hour: number) {
   if (hour < 12) return "Good morning";
@@ -38,79 +88,71 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
 
   const firstName = user?.name?.split(" ")[0] ?? "there";
   const greeting = greetingForHour(new Date().getHours());
-  const kpis = useMemo(() => countKpis(tasks), [tasks]);
   const problemTypes = useMemo(() => countByComplaintType(tasks), [tasks]);
   const topCloser = useMemo(() => rankWorkersByClosed(tasks)[0], [tasks]);
   const topBacklog = useMemo(() => rankWorkersByOpen(tasks)[0], [tasks]);
 
-  const openTasks = tasks
-    .filter((t) => t.status !== "completed" && t.status !== "cancelled")
-    .sort((a, b) => new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime());
+  const activeTasks = useMemo(
+    () => tasks.filter((t) => t.status !== "cancelled"),
+    [tasks]
+  );
+
+  const filterCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        heroTaskCards.map((card) => [
+          card.filter,
+          activeTasks.filter((task) => matchesSupervisorTaskFilter(task, card.filter))
+            .length,
+        ])
+      ) as Record<SupervisorTaskFilter, number>,
+    [activeTasks]
+  );
 
   const maxProblemCount = Math.max(1, ...problemTypes.map((p) => p.count));
 
   return (
     <div className="space-y-8 p-5 pb-12 sm:p-8 lg:p-10">
-      {(focus === "full" || focus === "calendar" || focus === "team") && (
-        <section className="relative min-h-[26rem] overflow-hidden rounded-[1.75rem] sm:min-h-[30rem]">
+      {(focus === "full" || focus === "calendar") && (
+        <section className="relative min-h-[28rem] overflow-hidden rounded-[1.75rem] sm:min-h-[32rem]">
           <img
             src={images.building}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/25" />
-          <div className="relative z-10 flex min-h-[26rem] flex-col justify-end p-6 sm:min-h-[30rem] sm:p-8">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/30" />
+          <div className="relative z-10 flex min-h-[28rem] flex-col justify-end p-6 sm:min-h-[32rem] sm:p-8">
             <h1 className="text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
               {greeting}, {firstName}
             </h1>
             <p className="mt-2 text-sm font-medium text-white/80 sm:text-base">
-              Supervisor dashboard
+              Here&apos;s what needs attention across your properties today.
             </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <GlassStatCard
-                tone="frosted"
-                icon={ListTodo}
-                label="Total requests"
-                value={String(kpis.total)}
-                trend={{ value: "+12%", direction: "up" }}
-              />
-              <GlassStatCard
-                tone="frosted"
-                icon={AlertCircle}
-                label="Needs attention"
-                value={String(kpis.needsAttention)}
-                trend={{ value: "+8%", direction: "up" }}
-              />
-              <GlassStatCard
-                tone="frosted"
-                icon={CheckCircle2}
-                label="Completed"
-                value={String(kpis.completed)}
-                trend={{ value: "+18%", direction: "up" }}
-              />
-              <GlassStatCard
-                tone="frosted"
-                icon={ClipboardList}
-                label="Overdue"
-                value={String(kpis.overdue)}
-                trend={{ value: "+6%", direction: "up" }}
-              />
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {heroTaskCards.map((card) => {
+                const Icon = card.icon;
+                const count = filterCounts[card.filter];
+                return (
+                  <GlassStatCard
+                    key={card.filter}
+                    tone="frosted"
+                    icon={Icon}
+                    label={card.label}
+                    hint={card.hint}
+                    value={String(count)}
+                    to={`/tasks?filter=${card.filter}`}
+                  />
+                );
+              })}
             </div>
+            <Link
+              to="/tasks"
+              className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              <AlertCircle className="h-4 w-4" />
+              View all tasks
+            </Link>
           </div>
-        </section>
-      )}
-
-      {focus === "full" && (
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {openTasks.slice(0, 8).map((task) => (
-            <TaskThumbnailCard
-              key={task.id}
-              repair={task}
-              to={`/tasks/${task.id}`}
-              layout="tile"
-              hideImages
-            />
-          ))}
         </section>
       )}
 
@@ -118,7 +160,7 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
         id="worker-workload"
         className={cn(
           "grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:grid-cols-2",
-          focus !== "full" && focus !== "team" && "hidden"
+          focus !== "full" && "hidden"
         )}
       >
         <Link
@@ -137,7 +179,7 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
           className="rounded-xl border border-border/60 bg-muted/20 p-4 transition-colors hover:bg-muted/40"
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Most unclosed
+            Largest backlog
           </p>
           <p className="mt-2 text-lg font-semibold">
             {topBacklog
@@ -147,12 +189,7 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
         </Link>
       </section>
 
-      <section
-        className={cn(
-          "grid gap-6 lg:grid-cols-2",
-          focus === "team" && "hidden"
-        )}
-      >
+      <section className="grid gap-6 lg:grid-cols-2">
         <RequestsByDayPanel
           id="requests-by-day"
           repairs={tasks}
@@ -190,14 +227,6 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
           </ul>
         </div>
       </section>
-
-      {focus === "full" && openTasks.length > 8 && (
-        <div className="text-center">
-          <Link to="/tasks" className="text-sm font-semibold text-primary hover:underline">
-            View all tasks →
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

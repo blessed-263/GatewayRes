@@ -15,7 +15,6 @@ import {
   ClipboardList,
   ListTodo,
 } from "lucide-react";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { RequestsByDayPanel } from "@/components/dashboard/RequestsByDayPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { useRepairs } from "@/context/RepairsContext";
@@ -55,13 +54,15 @@ export function AnalyticsPage() {
   }, [repairs]);
 
   return (
-    <>
-      <PageHeader
-        title="Analytics"
-        description="Operational insights from maintenance tasks — no budget or inventory data."
-      />
-      <main className="flex-1 space-y-8 p-5 pb-10 sm:p-8 lg:p-10">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <main className="flex-1 space-y-8 p-5 pb-10 sm:p-8 lg:p-10">
+      <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground sm:px-8">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Analytics</h1>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-white/85">
+          Operational insights from maintenance tasks — no budget or inventory data.
+        </p>
+      </section>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             title="Total requests"
             value={kpis.total}
@@ -230,7 +231,6 @@ export function AnalyticsPage() {
             )}
           </div>
         </div>
-      </main>
-    </>
+    </main>
   );
 }
