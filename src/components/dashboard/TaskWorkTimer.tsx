@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
-import { Clock } from "lucide-react";
+import { Check, ChevronDown, Clock, Package, Pause, Play, Square } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRepairs } from "@/context/RepairsContext";
 import {
   activeSession,
   completedSessions,
@@ -12,27 +20,65 @@ import {
 } from "@/lib/workTime";
 import { statusLabels } from "@/lib/repairLabels";
 import { cn } from "@/lib/utils";
-import type { Repair } from "@/types/repair";
+import type { Repair, RepairStatus } from "@/types/repair";
 
 interface TaskWorkTimerProps {
   repair: Repair;
   className?: string;
+  interactive?: boolean;
+  actor?: string;
+  onUpdated?: (repair: Repair) => void;
+  onRequestComplete?: () => void;
 }
 
-export function TaskWorkTimer({ repair, className }: TaskWorkTimerProps) {
+export function TaskWorkTimer({
+  repair,
+  className,
+  interactive = false,
+  actor = "Staff",
+  onUpdated,
+  onRequestComplete,
+}: TaskWorkTimerProps) {
+  const { updateRepairStatus, getRepairById } = useRepairs();
   const [now, setNow] = useState(Date.now());
+  const [saving, setSaving] = useState(false);
 
   const running = activeSession(repair);
   const isRunning = isBackgroundTimerRunning(repair);
   const history = completedSessions(repair);
   const totalSeconds = totalWorkSeconds(repair, now);
   const currentSeconds = running ? sessionDurationSeconds(running, now) : 0;
+  const isTerminal = repair.status === "completed" || repair.status === "cancelled";
+  const canControl = interactive && !isTerminal && Boolean(actor);
 
   useEffect(() => {
     if (!isRunning) return;
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [isRunning]);
+
+  async function applyStatus(status: RepairStatus) {
+    setSaving(true);
+    try {
+      await updateRepairStatus(repair.id, status, actor);
+      const updated = getRepairById(repair.id);
+      if (updated) onUpdated?.(updated);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleStart() {
+    void applyStatus("in_progress");
+  }
+
+  function handleStopChoice(status: RepairStatus) {
+    if (status === "completed") {
+      onRequestComplete?.();
+      return;
+    }
+    void applyStatus(status);
+  }
 
   return (
     <section
@@ -52,12 +98,72 @@ export function TaskWorkTimer({ repair, className }: TaskWorkTimerProps) {
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           {isRunning
-            ? "Running in the background while status is In Progress"
-            : totalSeconds > 0
-              ? "Total time logged on this job"
-              : "Starts automatically when you set status to In Progress"}
+            ? "Timer running — tap Stop when you pause or finish"
+            : isTerminal
+              ? totalSeconds > 0
+                ? "Total time logged on this job"
+                : "No work time recorded"
+              : totalSeconds > 0
+                ? "Total time logged on this job"
+                : canControl
+                  ? "Tap Start when you begin work on this job"
+                  : "No work time recorded yet"}
         </p>
       </div>
+
+      {canControl ? (
+        <div className="mt-4">
+          {isRunning ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-xl sm:w-auto"
+                  disabled={saving}
+                >
+                  <Square className="mr-2 h-4 w-4 fill-current" />
+                  {saving ? "Saving…" : "Stop"}
+                  <ChevronDown className="ml-2 h-4 w-4 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 rounded-xl">
+                <DropdownMenuItem
+                  className="rounded-lg"
+                  onClick={() => handleStopChoice("open")}
+                >
+                  <Pause className="mr-2 h-4 w-4" />
+                  Pause work
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="rounded-lg"
+                  onClick={() => handleStopChoice("awaiting_parts")}
+                >
+                  <Package className="mr-2 h-4 w-4" />
+                  Awaiting parts
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="rounded-lg"
+                  onClick={() => handleStopChoice("completed")}
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Complete job
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              type="button"
+              className="w-full rounded-xl sm:w-auto"
+              disabled={saving}
+              onClick={handleStart}
+            >
+              <Play className="mr-2 h-4 w-4" />
+              {saving ? "Starting…" : "Start work"}
+            </Button>
+          )}
+        </div>
+      ) : null}
 
       {isRunning && running ? (
         <div className="mt-4 space-y-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-3 text-sm">

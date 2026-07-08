@@ -10,7 +10,7 @@ export function statusChangeConfirmMessage(
   const toLabel = statusLabels[to];
 
   if (to === "in_progress") {
-    return `Start work on "${jobTitle}"? Status will change to ${toLabel} and the work timer will begin in the background.`;
+    return `Start work on "${jobTitle}"? Status will change to ${toLabel}.`;
   }
   if (to === "completed") {
     return `Mark "${jobTitle}" as ${toLabel}? The work timer will stop and the completion time will be saved.`;

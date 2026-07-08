@@ -32,7 +32,7 @@ import type {
   WorkTimeSession,
 } from "@/types/repair";
 
-const STORAGE_KEY = "gateway-repairs";
+const STORAGE_KEY = "gateway-repairs-v2";
 const INVENTORY_STORAGE_KEY = "gateway-inventory";
 
 interface RepairsContextValue {

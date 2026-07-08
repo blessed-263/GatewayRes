@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RepairComments } from "@/components/dashboard/RepairComments";
 import { StatusChangeConfirmDialog } from "@/components/dashboard/StatusChangeConfirmDialog";
@@ -14,15 +13,7 @@ import {
   statusLabels,
 } from "@/lib/repairLabels";
 import { formatDate } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import type { Repair, RepairStatus } from "@/types/repair";
-
-const statusOptions: { value: RepairStatus; label: string }[] = [
-  { value: "open", label: "Pending" },
-  { value: "in_progress", label: "In Progress" },
-  { value: "awaiting_parts", label: "Awaiting Parts" },
-  { value: "completed", label: "Completed" },
-];
 
 export function WorkerJobPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,12 +52,6 @@ export function WorkerJobPage() {
 
   const job = repair;
   const workerName = user.assigneeName ?? user.name;
-
-  function requestStatusChange(status: RepairStatus) {
-    if (status === job.status) return;
-    setPendingStatus(status);
-    setConfirmOpen(true);
-  }
 
   async function confirmStatusChange() {
     if (!pendingStatus) return;
@@ -150,40 +135,16 @@ export function WorkerJobPage() {
           </dl>
         </section>
 
-        <TaskWorkTimer repair={repair} />
-
-        <section className="rounded-2xl border border-border/70 bg-card p-5">
-          <h2 className="mb-4 text-sm font-semibold">Status</h2>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {statusOptions.map((opt) => {
-              const selected = repair.status === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  disabled={saving}
-                  onClick={() => requestStatusChange(opt.value)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors",
-                    selected
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border/70 hover:bg-muted/40"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full border",
-                      selected ? "border-primary bg-primary text-white" : "border-muted-foreground/40"
-                    )}
-                  >
-                    {selected ? <Check className="h-3 w-3" /> : null}
-                  </span>
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-        </section>
+        <TaskWorkTimer
+          repair={repair}
+          interactive
+          actor={workerName}
+          onUpdated={setRepair}
+          onRequestComplete={() => {
+            setPendingStatus("completed");
+            setConfirmOpen(true);
+          }}
+        />
 
         <section className="rounded-2xl border border-border/70 bg-card p-5">
           <h2 className="mb-4 text-sm font-semibold">Notes</h2>
