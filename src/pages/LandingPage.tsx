@@ -7,7 +7,9 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { GatewayLogo } from "@/components/brand/GatewayLogo";
 import { Button } from "@/components/ui/button";
+import { brand } from "@/lib/brand";
 import { images } from "@/lib/images";
 import { loginPortals } from "@/lib/loginPortals";
 
@@ -28,7 +30,7 @@ const interfaces: {
     to: "/kiosk",
     cta: "Open kiosk",
     icon: Monitor,
-    accent: "from-primary/20 to-primary/5",
+    accent: "from-primary/35 via-emerald-50/80 to-white",
   },
   {
     key: "supervisor",
@@ -37,7 +39,7 @@ const interfaces: {
     to: loginPortals.supervisor.path,
     cta: "Supervisor sign in",
     icon: LayoutDashboard,
-    accent: "from-sky-500/15 to-sky-500/5",
+    accent: "from-sky-400/30 via-sky-50/90 to-white",
   },
   {
     key: "maintenance",
@@ -46,25 +48,30 @@ const interfaces: {
     to: loginPortals.maintenance.path,
     cta: "Maintenance sign in",
     icon: Wrench,
-    accent: "from-amber-500/15 to-amber-500/5",
+    accent: "from-amber-400/30 via-amber-50/90 to-white",
   },
 ];
 
 export function LandingPage() {
   return (
     <div className="min-h-[100dvh] bg-[#f6f6f3] text-slate-950">
-      <header className="border-b border-border/70 bg-primary text-primary-foreground">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:px-8">
+      <header className="relative overflow-hidden border-b border-border/70">
+        <img
+          src={images.hero}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full scale-105 object-cover blur-xl brightness-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#3A4B96]/95 via-primary/90 to-[#1A1927]/95" />
+        <div className="relative mx-auto flex h-20 max-w-6xl items-center justify-between px-6 lg:px-8">
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-2xl font-semibold tracking-tight">Gateway</span>
-              <span className="h-2 w-2 rounded-full bg-cyan-300" />
-            </div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/75">
-              Student Residences
+            <a href={brand.siteUrl} target="_blank" rel="noreferrer">
+              <GatewayLogo variant="light" height={44} />
+            </a>
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/75">
+              Student Accommodation in Johannesburg
             </p>
           </div>
-          <p className="hidden text-sm text-white/80 sm:block">NSFAS Accredited · Johannesburg</p>
         </div>
       </header>
 
@@ -121,10 +128,10 @@ export function LandingPage() {
               <Link
                 key={item.key}
                 to={item.to}
-                className="group overflow-hidden rounded-[1.5rem] border border-border/70 bg-white shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:shadow-md"
+                className="group overflow-hidden rounded-[1.5rem] border border-border/70 bg-white shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:shadow-lg"
               >
                 <div className={`bg-gradient-to-br ${item.accent} p-6`}>
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary shadow-sm">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary shadow-md">
                     <Icon className="h-6 w-6" />
                   </span>
                   <h2 className="mt-5 text-2xl font-semibold tracking-tight">{item.title}</h2>
@@ -141,7 +148,7 @@ export function LandingPage() {
       </main>
 
       <footer className="border-t border-border/70 bg-white/80 py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Gateway Student Accommodation · 30 Claim Street, Doornfontein
+        © {new Date().getFullYear()} Gateway Student Accommodation
       </footer>
     </div>
   );

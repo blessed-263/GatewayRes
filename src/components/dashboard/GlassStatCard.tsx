@@ -12,6 +12,7 @@ interface GlassStatCardProps {
     direction: "up" | "down";
   };
   tone?: "light" | "dark" | "frosted";
+  iconClassName?: string;
   className?: string;
   to?: string;
   hint?: string;
@@ -23,6 +24,7 @@ export function GlassStatCard({
   value,
   trend,
   tone = "light",
+  iconClassName,
   className,
   to,
   hint,
@@ -33,7 +35,12 @@ export function GlassStatCard({
   const frostedBody = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+        <span
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm",
+            iconClassName ?? "bg-primary"
+          )}
+        >
           <Icon className="h-5 w-5" />
         </span>
         {to ? (

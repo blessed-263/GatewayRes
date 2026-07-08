@@ -287,7 +287,7 @@ export function DailyAssignmentBoard({
                 </span>
                 {assignee}
                 <span className="font-normal normal-case text-muted-foreground">
-                  ({tasks.length} task{tasks.length === 1 ? "" : "s"})
+                  ({tasks.length} job{tasks.length === 1 ? "" : "s"})
                 </span>
               </h3>
               <div className="space-y-3">
@@ -307,8 +307,8 @@ export function DailyAssignmentBoard({
       ) : (
         <Card className="border-border/60">
           <CardContent className="py-14 text-center text-base text-muted-foreground">
-            No tasks scheduled for this day. Assign backlog items below or pick a
-            date on each task.
+            No maintenance jobs scheduled for this day. Assign backlog items below or pick a
+            date on each job.
           </CardContent>
         </Card>
       )}
@@ -322,7 +322,7 @@ export function DailyAssignmentBoard({
           daily run.
         </p>
         {unscheduledActive.length === 0 ? (
-          <p className="text-base text-muted-foreground">No unscheduled tasks.</p>
+          <p className="text-base text-muted-foreground">No unscheduled maintenance jobs.</p>
         ) : (
           <div className="space-y-3">
             {unscheduledActive.map((repair) => (

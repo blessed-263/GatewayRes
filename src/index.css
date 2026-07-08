@@ -122,6 +122,22 @@
   .elevated-card {
     @apply rounded-2xl border border-border/70 bg-card shadow-sm shadow-black/[0.04];
   }
+
+  .kiosk-page {
+    color: hsl(220 20% 14%);
+    --background: 0 0% 100%;
+    --foreground: 220 20% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 14%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 12% 38%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+  }
+
+  .kiosk-surface {
+    @apply rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-lg shadow-black/10;
+  }
 }
 
 @media print {

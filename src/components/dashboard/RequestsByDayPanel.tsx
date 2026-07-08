@@ -25,6 +25,8 @@ interface RequestsByDayPanelProps {
   id?: string;
   defaultPreset?: IntervalPreset;
   listMaxHeight?: string;
+  backgroundImage?: string;
+  overlayClassName?: string;
 }
 
 export function RequestsByDayPanel({
@@ -33,6 +35,8 @@ export function RequestsByDayPanel({
   id,
   defaultPreset = "30",
   listMaxHeight,
+  backgroundImage,
+  overlayClassName,
 }: RequestsByDayPanelProps) {
   const [preset, setPreset] = useState<IntervalPreset>(defaultPreset);
   const [customFrom, setCustomFrom] = useState(defaultCustomFrom(defaultPreset));
@@ -72,11 +76,23 @@ export function RequestsByDayPanel({
     <section
       id={id}
       className={cn(
-        "flex flex-col rounded-2xl border border-border/70 bg-card",
+        "relative flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card",
         className
       )}
     >
-      <div className="border-b border-border/70 p-5 sm:p-6">
+      {backgroundImage ? (
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <img src={backgroundImage} alt="" className="h-full w-full object-cover" />
+          <div
+            className={cn(
+              "absolute inset-0 bg-gradient-to-b from-white/94 via-white/92 to-white/95",
+              overlayClassName
+            )}
+          />
+        </div>
+      ) : null}
+
+      <div className="relative z-10 border-b border-border/70 p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Requests by day</h2>
@@ -145,13 +161,13 @@ export function RequestsByDayPanel({
 
       <div
         className={cn(
-          "space-y-6 overflow-y-auto p-5 sm:p-6",
+          "relative z-10 space-y-6 overflow-y-auto p-5 sm:p-6",
           listMaxHeight ?? "max-h-[32rem]"
         )}
       >
         {grouped.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-14 text-center">
-            <p className="text-sm font-medium">No requests in this period</p>
+            <p className="text-sm font-medium">No maintenance jobs in this period</p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
               Try a wider interval or check that new kiosk submissions are coming through.
             </p>
@@ -162,7 +178,7 @@ export function RequestsByDayPanel({
               <div className="mb-3 flex items-baseline justify-between gap-3">
                 <h3 className="text-sm font-semibold">{group.label}</h3>
                 <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                  {group.tasks.length} task{group.tasks.length === 1 ? "" : "s"}
+                  {group.tasks.length} job{group.tasks.length === 1 ? "" : "s"}
                 </span>
               </div>
               <div className="space-y-2">

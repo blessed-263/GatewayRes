@@ -1,5 +1,6 @@
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, LayoutDashboard, Monitor, Wrench } from "lucide-react";
+import { GatewayLogo } from "@/components/brand/GatewayLogo";
 import { Button } from "@/components/ui/button";
 import { demoUserForRole } from "@/data/demoUsers";
 import { useAuth } from "@/context/AuthContext";
@@ -67,6 +68,8 @@ export function LoginPage() {
             Back to interfaces
           </Link>
 
+          <GatewayLogo variant="light" height={40} className="my-6" />
+
           <div className="glass-card max-w-md p-6">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/70">
               {portal.subtitle}
@@ -94,7 +97,7 @@ export function LoginPage() {
               <ArrowLeft className="h-4 w-4" />
               Home
             </Link>
-            <span className="font-heading text-base font-semibold tracking-tight">Gateway</span>
+            <GatewayLogo height={32} />
           </div>
         </div>
 

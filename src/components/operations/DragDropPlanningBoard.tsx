@@ -126,7 +126,7 @@ export function DragDropPlanningBoard() {
               Planning board
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              Drag tasks onto assignees for {format(parseISO(`${selectedDay}T12:00:00`), "EEE d MMM")}
+              Drag maintenance jobs onto assignees for {format(parseISO(`${selectedDay}T12:00:00`), "EEE d MMM")}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Drop a card on a column to assign and schedule in one step.
@@ -177,7 +177,7 @@ export function DragDropPlanningBoard() {
       <section className="rounded-[1.5rem] border border-dashed border-border/70 bg-muted/15 p-5">
         <h3 className="text-lg font-semibold">Backlog — drag onto a column above</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          {backlog.length} unscheduled or other-day tasks
+          {backlog.length} unscheduled or other-day maintenance jobs
         </p>
         <div
           className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
@@ -220,7 +220,7 @@ function Column({
       </CardHeader>
       <CardContent className="space-y-2">
         {tasks.length === 0 ? (
-          <p className="py-6 text-center text-xs text-muted-foreground">Drop tasks here</p>
+          <p className="py-6 text-center text-xs text-muted-foreground">Drop maintenance jobs here</p>
         ) : (
           tasks.map((repair) => (
             <div key={repair.id}>

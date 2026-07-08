@@ -58,15 +58,15 @@ export function AnalyticsPage() {
       <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground sm:px-8">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Analytics</h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-white/85">
-          Operational insights from maintenance tasks — no budget or inventory data.
+          Operational insights from maintenance jobs — no budget or inventory data.
         </p>
       </section>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            title="Total requests"
+            title="Total jobs"
             value={kpis.total}
-            subtitle="All non-cancelled tasks"
+            subtitle="All non-cancelled jobs"
             icon={ListTodo}
             color="primary"
           />
@@ -81,7 +81,7 @@ export function AnalyticsPage() {
           <StatCard
             title="Completed"
             value={kpis.completed}
-            subtitle="Closed tasks"
+            subtitle="Closed jobs"
             icon={CheckCircle2}
             color="success"
             delay={0.16}
@@ -98,9 +98,9 @@ export function AnalyticsPage() {
 
         <div className="grid gap-6 xl:grid-cols-2">
           <div className="rounded-2xl border border-border/70 bg-card p-6">
-            <h3 className="text-lg font-semibold">Problems by type</h3>
+            <h3 className="text-lg font-semibold">Maintenance jobs by type</h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Task counts per complaint category
+              Job counts by maintenance type
             </p>
             <ResponsiveContainer width="100%" height={280} className="mt-5">
               <BarChart
@@ -144,7 +144,7 @@ export function AnalyticsPage() {
 
           {statusBreakdown.length > 0 && (
             <div className="rounded-2xl border border-border/70 bg-card p-6">
-              <h3 className="text-lg font-semibold">Tasks by status</h3>
+              <h3 className="text-lg font-semibold">Maintenance jobs by status</h3>
               <p className="mt-1 text-sm text-muted-foreground">Current pipeline breakdown</p>
               <ResponsiveContainer width="100%" height={280} className="mt-5">
                 <BarChart data={statusBreakdown} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
@@ -181,7 +181,7 @@ export function AnalyticsPage() {
         <div className="grid gap-6 xl:grid-cols-2">
           <div className="rounded-2xl border border-border/70 bg-card p-6">
             <h3 className="text-lg font-semibold">Most active workers</h3>
-            <p className="mt-1 text-sm text-muted-foreground">By completed tasks (closed by)</p>
+            <p className="mt-1 text-sm text-muted-foreground">By completed jobs (closed by)</p>
             {closedRanking.length > 0 ? (
               <ul className="mt-5 space-y-2">
                 {closedRanking.slice(0, 8).map((row) => (
@@ -200,14 +200,14 @@ export function AnalyticsPage() {
               </ul>
             ) : (
               <p className="mt-8 text-center text-sm text-muted-foreground">
-                No completed tasks yet.
+                No completed maintenance jobs yet.
               </p>
             )}
           </div>
 
           <div className="rounded-2xl border border-border/70 bg-card p-6">
             <h3 className="text-lg font-semibold">Largest open backlogs</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Unclosed tasks per assignee</p>
+            <p className="mt-1 text-sm text-muted-foreground">Unclosed jobs per assignee</p>
             {openRanking.length > 0 ? (
               <ul className="mt-5 space-y-2">
                 {openRanking.slice(0, 8).map((row) => (

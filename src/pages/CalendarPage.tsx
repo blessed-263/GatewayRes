@@ -99,9 +99,9 @@ export function CalendarPage() {
   const openTaskCount = filteredRepairs.filter((repair) => repair.status === "open").length;
 
   const metricLabel =
-    metric === "tasks" ? "Number of tasks" : metric === "inventory" ? "Inventory consumed" : "Money spent";
+    metric === "tasks" ? "Number of maintenance jobs" : metric === "inventory" ? "Inventory consumed" : "Money spent";
   const metricValueLabel =
-    metric === "tasks" ? "tasks" : metric === "inventory" ? "units consumed" : "spent";
+    metric === "tasks" ? "maintenance jobs" : metric === "inventory" ? "units consumed" : "spent";
   const metricValueFormatter =
     metric === "spend" ? (value: number) => formatZar(value) : undefined;
   const formatMetricNumber = (value: number) =>
@@ -157,7 +157,7 @@ export function CalendarPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tasks">Number of tasks</SelectItem>
+                  <SelectItem value="tasks">Number of maintenance jobs</SelectItem>
                   <SelectItem value="inventory">Inventory consumed</SelectItem>
                   <SelectItem value="spend">Money spent</SelectItem>
                 </SelectContent>
@@ -197,7 +197,7 @@ export function CalendarPage() {
             <CardContent className="flex items-center justify-between p-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Open tasks
+                  Open jobs
                 </p>
                 <p className="mt-2 text-3xl font-semibold">{openTaskCount}</p>
               </div>

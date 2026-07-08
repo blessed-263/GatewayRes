@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, ChevronLeft, ChevronRight, Home, Info, Wrench } from "lucide-react";
+import { Check, Home, Info, Wrench } from "lucide-react";
+import { GatewayLogo } from "@/components/brand/GatewayLogo";
+import { KioskBackdrop } from "@/components/brand/BlurredPhotoHero";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +22,7 @@ import {
 } from "@/data/buildingFloors";
 import { complaintTypeOptions } from "@/lib/complaintTypes";
 import { categoryLabels } from "@/lib/repairLabels";
+import { images } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import type {
   Building,
@@ -27,12 +30,12 @@ import type {
   RepairCategory,
 } from "@/types/repair";
 
-type KioskStep = 0 | 1 | 2;
+const kioskFieldClass = "h-11 bg-white text-slate-900";
+const kioskTextareaClass = "min-h-[120px] bg-white text-slate-900";
 
 export function KioskPage() {
   const { addRepair } = useRepairs();
   const [started, setStarted] = useState(false);
-  const [step, setStep] = useState<KioskStep>(0);
   const [submittedRepair, setSubmittedRepair] = useState<Repair | null>(null);
 
   const [firstName, setFirstName] = useState("");
@@ -58,7 +61,6 @@ export function KioskPage() {
 
   function resetKiosk() {
     setStarted(false);
-    setStep(0);
     setSubmittedRepair(null);
     setFirstName("");
     setSurname("");
@@ -95,65 +97,56 @@ export function KioskPage() {
   }
 
   return (
-    <div className="kiosk-page min-h-[100dvh] bg-[#f6f6f3] text-slate-950">
-      <KioskHeader />
+    <div className="kiosk-page relative min-h-[100dvh] bg-[#f6f6f3] text-slate-900">
+      <KioskBackdrop image={images.residence} />
 
-      <main className="kiosk-print-shell mx-auto flex w-full max-w-6xl flex-1 px-6 py-8 lg:px-8">
+      <div className="relative z-10 flex min-h-[100dvh] flex-col">
+        <KioskHeader />
+
+        <main className="kiosk-print-shell mx-auto flex w-full max-w-7xl flex-1 px-6 py-8 lg:px-8">
         {!started ? (
           <WelcomeScreen onStart={() => setStarted(true)} />
         ) : submittedRepair ? (
           <SuccessScreen repair={submittedRepair} />
         ) : (
           <div className="w-full space-y-6">
-            <div>
-              <p className="text-sm font-medium uppercase tracking-wide text-primary">
-                Maintenance complaints
+            <section className="kiosk-surface p-5 sm:p-6">
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary">
+                Maintenance jobs
               </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">
                 Gateway Student Accomodation maintenance form
               </h1>
-            </div>
-
-            <StepIndicator step={step} />
+              <p className="mt-2 max-w-5xl text-justify text-sm leading-6 text-slate-600">
+                Complete the student details and maintenance job details on this page, then submit
+                once everything is correct.
+              </p>
+            </section>
 
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <section className="rounded-2xl border border-border/70 bg-white shadow-sm">
-                <div className="p-6 sm:p-7">
-                  {step === 0 && (
-                    <RoomDetailsStep
-                      firstName={firstName}
-                      setFirstName={setFirstName}
-                      surname={surname}
-                      setSurname={setSurname}
-                      building={building}
-                      setBuilding={setBuilding}
-                      floor={floor}
-                      setFloor={setFloor}
-                      unit={unit}
-                      setUnit={setUnit}
-                    />
-                  )}
+              <section className="kiosk-surface overflow-hidden">
+                <div className="space-y-8 p-6 sm:p-7">
+                  <RoomDetailsStep
+                    firstName={firstName}
+                    setFirstName={setFirstName}
+                    surname={surname}
+                    setSurname={setSurname}
+                    building={building}
+                    setBuilding={setBuilding}
+                    floor={floor}
+                    setFloor={setFloor}
+                    unit={unit}
+                    setUnit={setUnit}
+                  />
 
-                  {step === 1 && (
+                  <div className="border-t border-slate-200 pt-8">
                     <ProblemDetailsStep
                       category={category}
                       setCategory={setCategory}
                       description={description}
                       setDescription={setDescription}
                     />
-                  )}
-
-                  {step === 2 && (
-                    <ReviewStep
-                      firstName={firstName}
-                      surname={surname}
-                      building={building}
-                      floor={floor}
-                      unit={unit}
-                      category={category}
-                      description={description}
-                    />
-                  )}
+                  </div>
 
                   {error && (
                     <p className="mt-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -162,46 +155,27 @@ export function KioskPage() {
                   )}
                 </div>
 
-                <div className="flex flex-col-reverse gap-3 border-t border-border/70 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                <div className="flex flex-col-reverse gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
                   <Button
                     type="button"
                     variant="outline"
                     className="h-11 rounded-lg"
-                    onClick={() => {
-                      if (step === 0) {
-                        resetKiosk();
-                      } else {
-                        setStep((current) => (current - 1) as KioskStep);
-                      }
-                    }}
+                    onClick={resetKiosk}
                   >
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    {step === 0 ? "Cancel" : "Back"}
+                    Cancel
                   </Button>
 
-                  {step < 2 ? (
-                    <Button
-                      type="button"
-                      className="h-11 rounded-lg"
-                      disabled={step === 0 ? !roomStepComplete : !problemStepComplete}
-                      onClick={() => setStep((current) => (current + 1) as KioskStep)}
-                    >
-                      {step === 0 ? "Continue" : "Review request"}
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      className="h-11 rounded-lg"
-                      disabled={!canSubmit || submitting}
-                      onClick={() => void submitRequest()}
-                    >
-                      {submitting ? "Submitting..." : "Submit request"}
-                    </Button>
-                  )}
+                  <Button
+                    type="button"
+                    className="h-11 rounded-lg px-8"
+                    disabled={!canSubmit || submitting}
+                    onClick={() => void submitRequest()}
+                  >
+                    {submitting ? "Submitting..." : "Submit maintenance job"}
+                  </Button>
                 </div>
 
-                <p className="border-t border-border/70 px-6 py-4 text-center text-sm text-muted-foreground sm:px-7">
+                <p className="border-t border-slate-200 px-6 py-4 text-center text-sm text-slate-600 sm:px-7">
                   WI-FI and TV related issues, please contact 081 491 5304 via WhatsApp.
                 </p>
               </section>
@@ -210,22 +184,27 @@ export function KioskPage() {
             </div>
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
 
 function KioskHeader() {
   return (
-    <header className="kiosk-no-print bg-primary text-primary-foreground">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
+    <header className="kiosk-no-print relative overflow-hidden border-b border-border/40">
+      <img
+        src={images.hero}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full scale-105 object-cover blur-xl brightness-50"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#3A4B96]/95 via-primary/90 to-[#1A1927]/90" />
+      <div className="relative mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
         <div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-2xl font-semibold tracking-tight">Gateway</span>
-            <span className="h-2 w-2 rounded-full bg-cyan-300" />
-          </div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
-            Student Accomodation
+          <GatewayLogo variant="light" height={40} />
+          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
+            Student Accommodation
           </p>
         </div>
         <Link
@@ -243,55 +222,25 @@ function KioskHeader() {
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
   return (
     <div className="grid min-h-[calc(100dvh-8rem)] w-full place-items-center">
-      <section className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border/70 bg-white p-8 text-center shadow-lg shadow-black/5 sm:p-12">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-primary text-primary">
+      <section className="kiosk-surface w-full max-w-3xl p-8 text-center sm:p-12">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-primary bg-primary/10 text-primary shadow-sm">
           <Wrench className="h-9 w-9" strokeWidth={1.8} />
         </div>
-        <h1 className="mt-7 text-4xl font-semibold tracking-tight text-slate-950">
-          Maintenance complaints
+        <h1 className="mt-7 text-4xl font-semibold tracking-tight text-slate-900">
+            Maintenance jobs
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
+        <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-slate-600">
           WI-FI and TV related issues, please contact 081 491 5304 via WhatsApp. A ref number
           will be displayed after you submit.
         </p>
         <Button type="button" size="lg" className="mt-8 h-14 rounded-lg px-12 text-lg" onClick={onStart}>
           Start a new request
         </Button>
-        <p className="mt-6 text-sm text-muted-foreground">
+        <p className="mt-6 text-sm text-slate-600">
           For urgent safety issues, notify reception immediately.
         </p>
       </section>
     </div>
-  );
-}
-
-function StepIndicator({ step }: { step: KioskStep }) {
-  const steps = ["Student details", "Complaint details", "Review"];
-  return (
-    <ol className="grid gap-3 sm:grid-cols-3">
-      {steps.map((label, index) => (
-        <li key={label} className="flex items-center gap-3">
-          <span
-            className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
-              index === step
-                ? "bg-primary text-primary-foreground"
-                : index < step
-                  ? "bg-primary/10 text-primary"
-                  : "bg-muted text-muted-foreground"
-            )}
-          >
-            {index < step ? <Check className="h-4 w-4" /> : index + 1}
-          </span>
-          <span className={cn("text-sm font-medium", index === step && "text-primary")}>
-            {label}
-          </span>
-          {index < steps.length - 1 && (
-            <span className="hidden h-px flex-1 bg-border sm:block" />
-          )}
-        </li>
-      ))}
-    </ol>
   );
 }
 
@@ -321,19 +270,19 @@ function RoomDetailsStep({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold">Student details</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-xl font-semibold text-slate-900">Student details</h2>
+        <p className="text-sm text-slate-600">
           Fields marked with * are required.
         </p>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Field label="Name *" htmlFor="firstName">
           <Input
             id="firstName"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="Enter name"
-            className="h-11"
+            className={kioskFieldClass}
             autoFocus
           />
         </Field>
@@ -343,7 +292,7 @@ function RoomDetailsStep({
             value={surname}
             onChange={(e) => setSurname(e.target.value)}
             placeholder="Enter surname"
-            className="h-11"
+            className={kioskFieldClass}
           />
         </Field>
         <Field label="Building *">
@@ -355,7 +304,7 @@ function RoomDetailsStep({
               setUnit("");
             }}
           >
-            <SelectTrigger className="h-11">
+            <SelectTrigger className={kioskFieldClass}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -369,7 +318,7 @@ function RoomDetailsStep({
         </Field>
         <Field label="Floor *">
           <Select value={floor || undefined} onValueChange={setFloor}>
-            <SelectTrigger className="h-11">
+            <SelectTrigger className={kioskFieldClass}>
               <SelectValue placeholder="Select floor" />
             </SelectTrigger>
             <SelectContent>
@@ -387,7 +336,7 @@ function RoomDetailsStep({
             value={unit}
             onChange={(e) => setUnit(e.target.value.toUpperCase())}
             placeholder="e.g. L002"
-            className="h-11"
+            className={kioskFieldClass}
           />
         </Field>
       </div>
@@ -409,14 +358,14 @@ function ProblemDetailsStep({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold">Complaint details</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-xl font-semibold text-slate-900">Maintenance job details</h2>
+        <p className="text-sm text-slate-600">
           Tell us what issue you need help with.
         </p>
       </div>
-      <Field label="Type of complaint *">
+      <Field label="Type of maintenance job *">
         <Select value={category} onValueChange={(value) => setCategory(value as RepairCategory)}>
-          <SelectTrigger className="h-11">
+          <SelectTrigger className={kioskFieldClass}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -433,53 +382,10 @@ function ProblemDetailsStep({
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe your complaint clearly."
-          className="min-h-[120px]"
+          placeholder="Describe the maintenance job clearly."
+          className={kioskTextareaClass}
         />
       </Field>
-    </div>
-  );
-}
-
-function ReviewStep({
-  firstName,
-  surname,
-  building,
-  floor,
-  unit,
-  category,
-  description,
-}: {
-  firstName: string;
-  surname: string;
-  building: Building;
-  floor: string;
-  unit: string;
-  category: RepairCategory;
-  description: string;
-}) {
-  return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="text-xl font-semibold">Review request</h2>
-        <p className="text-sm text-muted-foreground">
-          Check the details before submitting. Reception can use the reference number for follow-up.
-        </p>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <ReviewItem label="Name" value={firstName} />
-        <ReviewItem label="Surname" value={surname} />
-        <ReviewItem label="Building" value={building} />
-        <ReviewItem label="Floor" value={floor} />
-        <ReviewItem label="Room number" value={unit} />
-        <ReviewItem label="Type of complaint" value={categoryLabels[category]} />
-      </div>
-      <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Description
-        </p>
-        <p className="mt-2 text-sm leading-6">{description}</p>
-      </div>
     </div>
   );
 }
@@ -487,33 +393,33 @@ function ReviewStep({
 function SuccessScreen({ repair }: { repair: Repair }) {
   return (
     <div className="grid min-h-[calc(100dvh-8rem)] w-full place-items-center">
-      <section className="kiosk-print-receipt w-full max-w-2xl overflow-hidden rounded-2xl border border-border/70 bg-white shadow-lg shadow-black/5">
+      <section className="kiosk-print-receipt kiosk-surface w-full max-w-2xl">
         <div className="p-8 text-center sm:p-12">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-primary text-primary">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-primary bg-primary/10 text-primary">
             <Check className="h-10 w-10" />
           </div>
           <h1 className="mt-6 text-3xl font-semibold tracking-tight text-primary">
             Request submitted
           </h1>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 text-slate-600">
             Your maintenance request has been received.
           </p>
 
-          <div className="mx-auto mt-7 max-w-md border-y border-border/70 py-5">
-            <p className="text-sm text-muted-foreground">Ref number</p>
+          <div className="mx-auto mt-7 max-w-md border-y border-slate-200 py-5">
+            <p className="text-sm text-slate-500">Ref number</p>
             <p className="mt-1 font-mono text-3xl font-semibold text-primary">
               {repair.id}
             </p>
           </div>
 
           <dl className="mx-auto mt-5 grid max-w-sm grid-cols-[auto_1fr] gap-x-8 gap-y-2 text-left text-sm">
-            <dt className="text-muted-foreground">Student:</dt>
-            <dd className="font-medium">{repair.reportedBy}</dd>
-            <dt className="text-muted-foreground">Unit:</dt>
-            <dd className="font-medium">{repair.unit}</dd>
-            <dt className="text-muted-foreground">Category:</dt>
-            <dd className="font-medium">{categoryLabels[repair.category]}</dd>
-            <dt className="text-muted-foreground">Status:</dt>
+            <dt className="text-slate-500">Student:</dt>
+            <dd className="font-medium text-slate-900">{repair.reportedBy}</dd>
+            <dt className="text-slate-500">Unit:</dt>
+            <dd className="font-medium text-slate-900">{repair.unit}</dd>
+            <dt className="text-slate-500">Category:</dt>
+            <dd className="font-medium text-slate-900">{categoryLabels[repair.category]}</dd>
+            <dt className="text-slate-500">Status:</dt>
             <dd className="font-medium text-primary">Open</dd>
           </dl>
         </div>
@@ -523,33 +429,37 @@ function SuccessScreen({ repair }: { repair: Repair }) {
 }
 
 function HelpPanel() {
+  const steps = [
+    { title: "You will receive a reference number", body: "Keep it for follow-up at reception.", color: "bg-sky-500" },
+    { title: "Maintenance will review the request", body: "The team reviews the maintenance job and assigns priority.", color: "bg-primary" },
+    { title: "Status updates stay at reception", body: "Staff can check progress using your reference number.", color: "bg-emerald-500" },
+  ];
+
   return (
-    <aside className="h-fit rounded-2xl border border-border/70 bg-white p-6 shadow-sm">
+    <aside className="kiosk-surface h-fit border-primary/20 p-6">
       <div className="flex items-center gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
           <Info className="h-4 w-4" />
         </span>
-        <h2 className="text-sm font-semibold">What happens next</h2>
+        <h2 className="text-sm font-semibold text-slate-900">What happens next</h2>
       </div>
       <ul className="mt-5 space-y-5 text-sm">
-        <li>
-          <p className="font-medium">You will receive a reference number</p>
-          <p className="mt-1 text-muted-foreground">
-            Keep it for follow-up at reception.
-          </p>
-        </li>
-        <li>
-          <p className="font-medium">Maintenance will review the request</p>
-          <p className="mt-1 text-muted-foreground">
-            The team reviews the complaint and assigns priority.
-          </p>
-        </li>
-        <li>
-          <p className="font-medium">Status updates stay at reception</p>
-          <p className="mt-1 text-muted-foreground">
-            Staff can check progress using your reference number.
-          </p>
-        </li>
+        {steps.map((step, index) => (
+          <li key={step.title} className="flex gap-3">
+            <span
+              className={cn(
+                "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
+                step.color
+              )}
+            >
+              {index + 1}
+            </span>
+            <div>
+              <p className="font-medium text-slate-900">{step.title}</p>
+              <p className="mt-1 text-slate-600">{step.body}</p>
+            </div>
+          </li>
+        ))}
       </ul>
     </aside>
   );
@@ -566,19 +476,11 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor} className="text-slate-800">
+        {label}
+      </Label>
       {children}
     </div>
   );
 }
 
-function ReviewItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-border/70 bg-muted/20 p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1 text-sm font-medium">{value}</p>
-    </div>
-  );
-}

@@ -144,7 +144,7 @@ export function SupervisorCalendarPage() {
               to="/tasks"
             />
             <HeroStat
-              label="Open tasks"
+              label="Open jobs"
               value={stats.openTasks}
               hint="Awaiting action"
               icon={ListTodo}
@@ -179,7 +179,7 @@ export function SupervisorCalendarPage() {
               {viewMode === "scheduled" ? "Scheduled workload" : "Incoming requests"}
             </h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Tap a day to inspect tasks · darker cells mean more activity
+              Tap a day to inspect maintenance jobs · darker cells mean more activity
             </p>
           </div>
           <div className="p-4 sm:p-6">
@@ -270,8 +270,8 @@ export function SupervisorCalendarPage() {
                 <h2 className="text-lg font-semibold tracking-tight">{selectedLabel}</h2>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {selectedTasks.length === 0
-                    ? "No tasks for this day"
-                    : `${selectedTasks.length} task${selectedTasks.length === 1 ? "" : "s"}`}
+                    ? "No maintenance jobs for this day"
+                    : `${selectedTasks.length} job${selectedTasks.length === 1 ? "" : "s"}`}
                 </p>
               </div>
               <Badge variant="secondary">
@@ -289,7 +289,7 @@ export function SupervisorCalendarPage() {
                   pick another day.
                 </p>
                 <Button asChild variant="outline" className="mt-5 rounded-xl">
-                  <Link to={`/tasks?date=${selectedDate}`}>Open in tasks</Link>
+                  <Link to={`/tasks?date=${selectedDate}`}>Open in maintenance jobs</Link>
                 </Button>
               </div>
             ) : (

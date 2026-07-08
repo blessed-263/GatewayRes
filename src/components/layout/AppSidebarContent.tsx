@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { GatewayLogo } from "@/components/brand/GatewayLogo";
 import {
   BarChart3,
   Calendar,
@@ -61,15 +62,10 @@ export function AppSidebarContent({
           collapsed && "lg:justify-center lg:px-0"
         )}
       >
-        <span className="flex h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden />
-        <span
-          className={cn(
-            "text-xl font-semibold tracking-tight text-slate-900",
-            collapsed && "lg:hidden"
-          )}
-        >
-          Gateway
-        </span>
+        <GatewayLogo
+          height={collapsed ? 28 : 32}
+          className={cn(collapsed && "lg:max-w-[2.5rem]")}
+        />
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-2">

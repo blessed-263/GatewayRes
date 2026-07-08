@@ -109,7 +109,7 @@ export function RepairDetailPage() {
     if (!id || !user) return;
     const r = getRepairById(id);
     if (!r) {
-      setError("Repair not found");
+      setError("Maintenance job not found");
       setLoading(false);
       return;
     }
@@ -140,7 +140,7 @@ export function RepairDetailPage() {
   if (loading && !repair) {
     return (
       <main className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
-        Loading repair…
+        Loading maintenance job…
       </main>
     );
   }
@@ -148,9 +148,9 @@ export function RepairDetailPage() {
   if (error || !repair) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
-        <p className="text-muted-foreground">{error ?? "Repair not found"}</p>
+        <p className="text-muted-foreground">{error ?? "Maintenance job not found"}</p>
         <Button asChild variant="outline">
-          <Link to="/tasks">Back to tasks</Link>
+          <Link to="/tasks">Back to maintenance jobs</Link>
         </Button>
       </main>
     );
@@ -183,7 +183,7 @@ export function RepairDetailPage() {
                 onClick={() => {
                   if (
                     window.confirm(
-                      `Delete repair ${repair.id}? This cannot be undone.`
+                      `Delete maintenance job ${repair.id}? This cannot be undone.`
                     )
                   ) {
                     void deleteRepair(repair.id).then(() => navigate("/tasks"));

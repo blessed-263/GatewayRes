@@ -20,9 +20,9 @@ const supervisorNav: NavItem[] = [
   },
   {
     path: "/tasks",
-    label: "Tasks",
-    mark: "TK",
-    shortLabel: "Tasks",
+    label: "Maintenance Jobs",
+    mark: "MJ",
+    shortLabel: "Jobs",
     mobileTab: true,
     roles: ["supervisor"],
   },
@@ -90,7 +90,7 @@ export function getPageTitle(pathname: string, role?: UserRole): string {
   const exact = items.find((item) => item.path === pathname);
   if (exact) return exact.label;
   if (pathname.startsWith("/my-jobs/")) return "Job";
-  if (pathname.startsWith("/tasks/")) return "Repair";
+  if (pathname.startsWith("/tasks/")) return "Maintenance Job";
   if (pathname.startsWith("/team/")) return "Team profile";
   const prefix = items.find(
     (item) => item.path !== "/dashboard" && pathname.startsWith(item.path)

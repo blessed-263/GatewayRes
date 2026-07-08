@@ -82,12 +82,17 @@ export function TasksPage() {
 
   const grouped = useMemo(() => {
     if (typeFilter) {
-      return [{ label: complaintLabelForCategory(typeFilter), tasks: filtered }];
+      return filtered.length > 0
+        ? [{ label: complaintLabelForCategory(typeFilter), tasks: filtered }]
+        : [];
     }
-    return complaintTypeOptions.map(({ label, value }) => ({
-      label,
-      tasks: sortTasks(filtered.filter((r) => r.category === value)),
-    }));
+    return complaintTypeOptions
+      .map(({ label, value }) => ({
+        label,
+        tasks: sortTasks(filtered.filter((r) => r.category === value)),
+      }))
+      .filter((group) => group.tasks.length > 0)
+      .sort((a, b) => b.tasks.length - a.tasks.length);
   }, [filtered, typeFilter]);
 
   const hasExtraFilters = Boolean(typeFilter || workerFilter || dateFilter);
@@ -107,9 +112,9 @@ export function TasksPage() {
   return (
     <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
       <section className="rounded-[1.75rem] border border-primary/15 bg-primary px-6 py-7 text-primary-foreground sm:px-8">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Tasks</h1>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Maintenance Jobs</h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-white/85">
-          Filter by assignment, status, and due date. Grouped by complaint type.
+          Filter by assignment, status, and due date. Grouped by type, sorted by open job count.
         </p>
       </section>
 
@@ -150,19 +155,19 @@ export function TasksPage() {
           </p>
         )}
 
-        {grouped.map((group) => (
-          <section key={group.label}>
-            <h2 className="mb-4 text-xl font-semibold">
-              {group.label}{" "}
-              <span className="text-base font-normal text-muted-foreground">
-                ({group.tasks.length})
-              </span>
-            </h2>
-            {group.tasks.length === 0 ? (
-              <p className="rounded-xl border border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
-                No tasks in this category.
-              </p>
-            ) : (
+        {grouped.length === 0 ? (
+          <p className="rounded-xl border border-border/70 bg-muted/20 p-5 text-sm text-muted-foreground">
+            No maintenance jobs match the current filters.
+          </p>
+        ) : (
+          grouped.map((group) => (
+            <section key={group.label}>
+              <h2 className="mb-4 text-xl font-semibold">
+                {group.label}{" "}
+                <span className="text-base font-normal text-muted-foreground">
+                  ({group.tasks.length})
+                </span>
+              </h2>
               <div className="space-y-3">
                 {group.tasks.map((task) => (
                   <TaskThumbnailCard
@@ -180,9 +185,9 @@ export function TasksPage() {
                   />
                 ))}
               </div>
-            )}
-          </section>
-        ))}
+            </section>
+          ))
+        )}
     </main>
   );
 }

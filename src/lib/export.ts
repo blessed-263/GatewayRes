@@ -109,7 +109,7 @@ export function exportDailyAssignmentsCsv(repairs: Repair[], day: string) {
     ["Date", day],
     ["Exported", format(new Date(), "yyyy-MM-dd HH:mm")],
     [],
-    ["Assignee", "Task ID", "Title", "Unit", "Building", "Priority", "Status", "Category"],
+    ["Assignee", "Job ID", "Title", "Unit", "Building", "Priority", "Status", "Category"],
   ];
 
   for (const [assignee, tasks] of Object.entries(byAssignee).sort(([a], [b]) =>
@@ -130,7 +130,7 @@ export function exportDailyAssignmentsCsv(repairs: Repair[], day: string) {
   }
 
   if (dayRepairs.length === 0) {
-    rows.push([], ["No tasks scheduled for this date"]);
+    rows.push([], ["No maintenance jobs scheduled for this date"]);
   }
 
   downloadCsv(`gateway-daily-assignments-${day}.csv`, rows);

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { Link, Navigate, useParams } from "react-router-dom";
 import {
@@ -11,6 +12,9 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { TaskThumbnailCard } from "@/components/dashboard/TaskThumbnailCard";
 import { useRepairs } from "@/context/RepairsContext";
 import { getDepartmentInfo, getTeamProfileBySlug } from "@/data/teamProfiles";
+import { workersInPool } from "@/lib/complaintAssignment";
+import { complaintLabelForCategory, complaintTypeOptions } from "@/lib/complaintTypes";
+import { categoryBarClass } from "@/lib/categoryVisuals";
 import {
   activeTasksForWorker,
   analyticsForWorker,
@@ -18,7 +22,8 @@ import {
 } from "@/lib/workerAnalytics";
 import { isRepairOverdue } from "@/lib/taskFilters";
 import { statusLabels } from "@/lib/repairLabels";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
+import type { Repair } from "@/types/repair";
 
 export function TeamMemberPage() {
   const { memberSlug } = useParams<{ memberSlug: string }>();
@@ -31,6 +36,31 @@ export function TeamMemberPage() {
   const analytics = analyticsForWorker(repairs, member.name);
   const allocatedTasks = activeTasksForWorker(repairs, member.name);
   const historyTasks = recentHistoryForWorker(repairs, member.name);
+  const assignmentPools = useMemo(
+    () =>
+      complaintTypeOptions
+        .map((pool) => pool.value)
+        .filter((category) => workersInPool(category).includes(member.name)),
+    [member.name]
+  );
+
+  const assignedByType = useMemo(() => {
+    const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
+    const sortTasks = (tasks: Repair[]) =>
+      [...tasks].sort((a, b) => {
+        const p = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (p !== 0) return p;
+        return new Date(b.reportedAt).getTime() - new Date(a.reportedAt).getTime();
+      });
+
+    return complaintTypeOptions
+      .map(({ label, value }) => ({
+        category: value,
+        label,
+        tasks: sortTasks(allocatedTasks.filter((task) => task.category === value)),
+      }))
+      .filter((group) => group.tasks.length > 0);
+  }, [allocatedTasks]);
 
   return (
     <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
@@ -65,6 +95,18 @@ export function TeamMemberPage() {
             </span>
           ))}
         </div>
+        {assignmentPools.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {assignmentPools.map((pool) => (
+              <span
+                key={pool}
+                className="rounded-full border border-white/20 bg-black/15 px-3 py-1 text-xs font-semibold text-white/95"
+              >
+                {complaintLabelForCategory(pool)} pool
+              </span>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -103,9 +145,9 @@ export function TeamMemberPage() {
 
         {analytics.byCategory.length > 0 && (
           <section className="rounded-[1.5rem] border border-border/70 bg-card p-5 sm:p-6">
-            <h2 className="text-lg font-semibold">Task analytics by type</h2>
+            <h2 className="text-lg font-semibold">Job analytics by type</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Complaint categories handled by {member.name}
+              Maintenance job types handled by {member.name}
             </p>
             <ul className="mt-5 space-y-3">
               {analytics.byCategory.map((row) => (
@@ -116,7 +158,10 @@ export function TeamMemberPage() {
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-primary"
+                      className={cn(
+                        "h-full rounded-full",
+                        categoryBarClass[row.category] ?? categoryBarClass.other
+                      )}
                       style={{
                         width: `${(row.count / analytics.totalHandled) * 100}%`,
                       }}
@@ -136,7 +181,7 @@ export function TeamMemberPage() {
         <section className="rounded-[1.5rem] border border-border/70 bg-card p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold">Assigned tasks</h2>
+              <h2 className="text-xl font-semibold">Assigned maintenance jobs</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {allocatedTasks.length} open assignment
                 {allocatedTasks.length === 1 ? "" : "s"}
@@ -146,37 +191,57 @@ export function TeamMemberPage() {
               to={`/tasks?worker=${encodeURIComponent(member.name)}&filter=assigned`}
               className="text-sm font-semibold text-primary hover:underline"
             >
-              View in tasks →
+              View maintenance jobs →
             </Link>
           </div>
           {allocatedTasks.length === 0 ? (
             <div className="mt-6 flex items-center gap-3 rounded-xl border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
               <AlertCircle className="h-5 w-5 shrink-0" />
-              No currently assigned tasks.
+              No currently assigned maintenance jobs.
             </div>
           ) : (
-            <div className="mt-4 space-y-3">
-              {allocatedTasks.map((repair) => (
-                <TaskThumbnailCard
-                  key={repair.id}
-                  repair={repair}
-                  to={`/tasks/${repair.id}`}
-                  hideImages
-                  footer={
-                    isRepairOverdue(repair)
-                      ? "Past due"
-                      : `${repair.building} · ${repair.unit}`
-                  }
-                />
+            <div className="mt-6 space-y-8">
+              {assignedByType.map((group) => (
+                <div key={group.category}>
+                  <div className="mb-4 flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "h-8 w-1 rounded-full",
+                        categoryBarClass[group.category] ?? categoryBarClass.other
+                      )}
+                    />
+                    <div>
+                      <h3 className="text-base font-semibold">{group.label}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {group.tasks.length} open job{group.tasks.length === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {group.tasks.map((repair) => (
+                      <TaskThumbnailCard
+                        key={repair.id}
+                        repair={repair}
+                        to={`/tasks/${repair.id}`}
+                        hideImages
+                        footer={
+                          isRepairOverdue(repair)
+                            ? "Past due"
+                            : `${repair.building} · ${repair.unit}`
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </section>
 
         <section className="rounded-[1.5rem] border border-border/70 bg-card p-5 sm:p-6">
-          <h2 className="text-xl font-semibold">Recent task history</h2>
+          <h2 className="text-xl font-semibold">Recent job history</h2>
           {historyTasks.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">No task history yet.</p>
+            <p className="mt-3 text-sm text-muted-foreground">No maintenance job history yet.</p>
           ) : (
             <div className="mt-4 space-y-3">
               {historyTasks.map((repair) => (

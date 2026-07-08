@@ -24,6 +24,7 @@ interface TeamMemberCardProps {
   active: number;
   departmentLabel?: string;
   index?: number;
+  accentClassName?: string;
 }
 
 const accentBars = [
@@ -40,9 +41,10 @@ export function TeamMemberCard({
   active,
   departmentLabel,
   index = 0,
+  accentClassName,
 }: TeamMemberCardProps) {
   const { pct, status, label } = workloadForActive(active);
-  const accent = accentBars[index % accentBars.length];
+  const accent = accentClassName ?? accentBars[index % accentBars.length];
 
   const statusStyles = {
     available: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400",
@@ -64,9 +66,9 @@ export function TeamMemberCard({
     >
       <Link
         to={`/team/${member.slug}`}
-        className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:shadow-md"
+        className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-border/70 bg-gradient-to-br from-card via-card to-muted/25 shadow-sm shadow-black/[0.03] transition-all hover:-translate-y-0.5 hover:shadow-md"
       >
-        <div className={cn("h-1.5 bg-gradient-to-r", accent)} />
+        <div className={cn("h-2 bg-gradient-to-r", accent)} />
 
         <div className="flex flex-1 flex-col p-5 sm:p-6">
           <div className="flex items-start justify-between gap-4">
@@ -139,7 +141,7 @@ export function TeamMemberCard({
           </div>
 
           <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4 text-sm font-semibold text-primary">
-            <span>View profile & tasks</span>
+            <span>View profile & jobs</span>
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </div>
         </div>

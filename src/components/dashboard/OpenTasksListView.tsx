@@ -43,11 +43,11 @@ export function OpenTasksListView({ initialStatusFilter = "open" }: OpenTasksLis
     <section className="rounded-[1.5rem] border border-border/70 bg-card p-5">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h2 className="text-2xl font-semibold tracking-tight">
-          Tasks ({filteredTasks.length})
+          Maintenance Jobs ({filteredTasks.length})
         </h2>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Input
-            placeholder="Search tasks..."
+            placeholder="Search maintenance jobs..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="h-11 w-full sm:w-64"
@@ -91,7 +91,7 @@ export function OpenTasksListView({ initialStatusFilter = "open" }: OpenTasksLis
 
       {filteredTasks.length === 0 ? (
         <p className="rounded-xl border border-border/70 bg-muted/20 p-5 text-sm text-muted-foreground">
-          No tasks match your filters.
+          No maintenance jobs match your filters.
         </p>
       ) : (
         <div className="space-y-3">

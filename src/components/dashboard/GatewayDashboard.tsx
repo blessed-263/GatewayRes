@@ -24,6 +24,7 @@ import {
   matchesSupervisorTaskFilter,
   type SupervisorTaskFilter,
 } from "@/lib/taskFilters";
+import { categoryBarClass } from "@/lib/categoryVisuals";
 import { cn } from "@/lib/utils";
 
 export type DashboardFocus = "full" | "calendar";
@@ -37,42 +38,49 @@ const heroTaskCards: {
   label: string;
   hint: string;
   icon: LucideIcon;
+  iconClassName: string;
 }[] = [
   {
     filter: "pending",
-    label: "Open tasks",
+    label: "Open jobs",
     hint: "Pending & in progress",
     icon: ClipboardList,
+    iconClassName: "bg-sky-500",
   },
   {
     filter: "unassigned",
     label: "Unassigned",
     hint: "Needs a technician",
     icon: UserX,
+    iconClassName: "bg-violet-500",
   },
   {
     filter: "awaiting_stock",
     label: "Awaiting stock",
     hint: "Waiting on parts",
     icon: Package,
+    iconClassName: "bg-amber-500",
   },
   {
     filter: "past_due",
     label: "Past due",
     hint: "Overdue schedule or SLA",
     icon: Clock,
+    iconClassName: "bg-red-500",
   },
   {
     filter: "assigned",
     label: "Assigned",
     hint: "With a technician",
     icon: UserCheck,
+    iconClassName: "bg-emerald-500",
   },
   {
     filter: "completed",
     label: "Completed",
-    hint: "Closed tasks",
+    hint: "Closed jobs",
     icon: CheckCircle2,
+    iconClassName: "bg-primary",
   },
 ];
 
@@ -88,7 +96,13 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
 
   const firstName = user?.name?.split(" ")[0] ?? "there";
   const greeting = greetingForHour(new Date().getHours());
-  const problemTypes = useMemo(() => countByComplaintType(tasks), [tasks]);
+  const problemTypes = useMemo(
+    () =>
+      countByComplaintType(tasks)
+        .filter((item) => item.count > 0)
+        .sort((a, b) => b.count - a.count),
+    [tasks]
+  );
   const topCloser = useMemo(() => rankWorkersByClosed(tasks)[0], [tasks]);
   const topBacklog = useMemo(() => rankWorkersByOpen(tasks)[0], [tasks]);
 
@@ -137,6 +151,7 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
                     key={card.filter}
                     tone="frosted"
                     icon={Icon}
+                    iconClassName={card.iconClassName}
                     label={card.label}
                     hint={card.hint}
                     value={String(count)}
@@ -150,7 +165,7 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
               className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >
               <AlertCircle className="h-4 w-4" />
-              View all tasks
+              View all maintenance jobs
             </Link>
           </div>
         </section>
@@ -159,13 +174,20 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
       <section
         id="worker-workload"
         className={cn(
-          "grid gap-4 rounded-2xl border border-border/70 bg-card p-5 sm:grid-cols-2",
+          "relative grid gap-4 overflow-hidden rounded-2xl border border-border/70 bg-card p-5 sm:grid-cols-2",
           focus !== "full" && "hidden"
         )}
       >
+        <img
+          src={images.residence}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/93 via-white/90 to-white/94" />
         <Link
           to={`/tasks?worker=${encodeURIComponent(topCloser?.name ?? "")}`}
-          className="rounded-xl border border-border/60 bg-muted/20 p-4 transition-colors hover:bg-muted/40"
+          className="relative z-10 rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/95 to-white/95 p-4 transition-all hover:border-emerald-300 hover:shadow-sm"
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Most active
@@ -176,7 +198,7 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
         </Link>
         <Link
           to={`/tasks?filter=pending`}
-          className="rounded-xl border border-border/60 bg-muted/20 p-4 transition-colors hover:bg-muted/40"
+          className="relative z-10 rounded-xl border border-amber-200/80 bg-gradient-to-br from-amber-50/95 to-white/95 p-4 transition-all hover:border-amber-300 hover:shadow-sm"
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Largest backlog
@@ -193,18 +215,27 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
         <RequestsByDayPanel
           id="requests-by-day"
           repairs={tasks}
+          backgroundImage={images.hero}
+          overlayClassName="from-[#eaf7f3]/94 via-white/90 to-white/94"
           className={cn(focus !== "full" && focus !== "calendar" && "hidden")}
         />
 
         <div
           className={cn(
-            "rounded-2xl border border-border/70 bg-card p-5",
+            "relative overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-primary/[0.04] via-card to-card p-5",
             focus !== "full" && "hidden"
           )}
         >
-          <h2 className="text-lg font-semibold">Problems by type</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Task counts by complaint category</p>
-          <ul className="mt-6 space-y-4">
+          <img
+            src={images.maintenance}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/94 via-white/91 to-white/95" />
+          <h2 className="relative z-10 text-lg font-semibold">Maintenance jobs by type</h2>
+          <p className="relative z-10 mt-1 text-sm text-muted-foreground">Maintenance job counts by type</p>
+          <ul className="relative z-10 mt-6 space-y-4">
             {problemTypes.map((item) => (
               <li key={item.category}>
                 <Link
@@ -217,7 +248,10 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
                   </div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-primary transition-all"
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        categoryBarClass[item.category] ?? categoryBarClass.other
+                      )}
                       style={{ width: `${(item.count / maxProblemCount) * 100}%` }}
                     />
                   </div>

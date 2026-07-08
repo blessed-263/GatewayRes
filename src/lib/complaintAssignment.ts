@@ -12,6 +12,16 @@ const workersByCategory: Partial<Record<RepairCategory, string[]>> = {
   other: ["Given K.", "Zanele R."],
 };
 
+export function workersInPool(category: RepairCategory): string[] {
+  return workersByCategory[category] ?? [];
+}
+
+export function poolsForWorker(name: string): RepairCategory[] {
+  return (Object.keys(workersByCategory) as RepairCategory[]).filter((category) =>
+    workersByCategory[category]?.includes(name)
+  );
+}
+
 export function workersForCategory(category: RepairCategory): string[] {
   return workersByCategory[category] ?? [DEFAULT_ASSIGNEE];
 }

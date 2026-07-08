@@ -36,7 +36,7 @@ export function CalendarHeatmap({
   focusMonth,
   showWeekdayLabels = true,
   showLegend = false,
-  valueLabel = "tasks",
+  valueLabel = "maintenance jobs",
   valueFormatter,
   className,
 }: CalendarHeatmapProps) {

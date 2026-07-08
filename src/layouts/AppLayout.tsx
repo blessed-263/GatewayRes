@@ -35,8 +35,7 @@ export function AppLayout() {
         <MobileTopBar onMenuOpen={() => setMobileMenuOpen(true)} />
         <Outlet />
         <footer className="mt-auto hidden border-t border-border/70 bg-card/60 px-8 py-6 text-center text-xs text-muted-foreground lg:block">
-          © {new Date().getFullYear()} Gateway Student Accommodation · NSFAS
-          Accredited · 30 Claim Street, Doornfontein
+          © {new Date().getFullYear()} Gateway Student Accommodation
         </footer>
       </div>
 

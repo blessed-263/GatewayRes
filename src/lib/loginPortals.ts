@@ -15,7 +15,7 @@ export const loginPortals: Record<
   supervisor: {
     title: "Supervisor dashboard",
     subtitle: "Operations control",
-    description: "Oversee open tasks, inventory, team workload, and spending.",
+    description: "Oversee open maintenance jobs, team workload, and operations.",
     role: "supervisor",
     path: "/login/supervisor",
   },

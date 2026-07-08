@@ -2,7 +2,7 @@ import { format, parseISO } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { categoryIcons, categoryTileClass } from "@/lib/categoryVisuals";
+import { categoryIcons, categoryBorderClass, categoryTileClass } from "@/lib/categoryVisuals";
 import {
   priorityBadgeVariant,
   priorityLabels,
@@ -96,7 +96,8 @@ export function TaskThumbnailCard({
     <Link
       to={to}
       className={cn(
-        "photo-card flex items-center gap-3 p-3",
+        "photo-card flex items-center gap-3 border-l-4 p-3",
+        categoryBorderClass[repair.category] ?? categoryBorderClass.other,
         compact ? "gap-3 p-3" : "gap-4 p-4",
         className
       )}

@@ -6,7 +6,7 @@ export function PlanningPage() {
     <>
       <PageHeader
         title="Planning Board"
-        description="Drag tasks onto team members to assign and schedule the daily run."
+        description="Drag maintenance jobs onto team members to assign and schedule the daily run."
       />
       <main className="flex-1 p-5 pb-10 sm:p-8 lg:p-10">
         <DragDropPlanningBoard />

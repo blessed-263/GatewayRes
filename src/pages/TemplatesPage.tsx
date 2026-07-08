@@ -40,7 +40,7 @@ export function TemplatesPage() {
       );
       setMessage(`Created ${repair.id} from template.`);
     } catch {
-      setMessage("Could not create task.");
+      setMessage("Could not create maintenance job.");
     } finally {
       setBusy(false);
     }
@@ -132,11 +132,11 @@ export function TemplatesPage() {
               </div>
               {template ? (
                 <p className="text-xs text-muted-foreground">
-                  Will create a {priorityLabels[template.defaultPriority]} {categoryLabels[template.category]} task.
+                  Will create a {priorityLabels[template.defaultPriority]} {categoryLabels[template.category]} maintenance job.
                 </p>
               ) : null}
               <Button className="w-full rounded-xl" onClick={handleCreate} disabled={busy}>
-                {busy ? "Creating…" : "Create task"}
+                {busy ? "Creating…" : "Create maintenance job"}
               </Button>
               {message ? <p className="text-sm text-primary">{message}</p> : null}
             </div>

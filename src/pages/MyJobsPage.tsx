@@ -10,10 +10,11 @@ import {
   type WorkerFilter,
 } from "@/lib/taskFilters";
 import { groupJobsByBuildingAndFloor } from "@/lib/workerJobGroups";
+import { workerFilterAccents } from "@/lib/cardAccents";
 import { cn } from "@/lib/utils";
 
 const filters: { id: WorkerFilter; label: string; icon: typeof ListTodo }[] = [
-  { id: "total", label: "Total tasks", icon: ListTodo },
+  { id: "total", label: "Total jobs", icon: ListTodo },
   { id: "pending", label: "Pending", icon: ClipboardList },
   { id: "overdue", label: "Overdue", icon: Clock },
   { id: "awaiting_parts", label: "Awaiting parts", icon: Package },
@@ -56,19 +57,18 @@ export function MyJobsPage() {
         {filters.map((f) => {
           const Icon = f.icon;
           const active = activeFilter === f.id;
+          const accent = workerFilterAccents[f.id];
           return (
             <button
               key={f.id}
               type="button"
               onClick={() => setActiveFilter(f.id)}
               className={cn(
-                "rounded-2xl border p-4 text-left transition-colors",
-                active
-                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                  : "border-border/70 bg-card hover:bg-muted/30"
+                "rounded-2xl border p-4 text-left transition-all",
+                active ? accent.active : accent.idle
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className={cn("h-5 w-5", active ? accent.iconActive : accent.iconIdle)} />
               <p className="mt-3 text-2xl font-semibold tabular-nums">{counts[f.id]}</p>
               <p className={cn("mt-1 text-sm", active ? "text-white/85" : "text-muted-foreground")}>
                 {f.label}

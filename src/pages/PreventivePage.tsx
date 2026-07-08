@@ -31,7 +31,7 @@ export function PreventivePage() {
     <>
       <PageHeader
         title="Preventive Maintenance"
-        description="Recurring inspections and scheduled tasks that generate work orders automatically."
+        description="Recurring inspections and scheduled maintenance jobs that generate work orders automatically."
       />
       <main className="flex-1 space-y-6 p-5 pb-10 sm:p-8 lg:p-10">
         <section className="grid gap-4 md:grid-cols-3">
@@ -45,7 +45,7 @@ export function PreventivePage() {
           <StatCard
             title="Overdue"
             value={overdue.length}
-            subtitle="Need task generation"
+            subtitle="Need job generation"
             icon={Play}
             color={overdue.length > 0 ? "danger" : "success"}
           />
@@ -104,7 +104,7 @@ export function PreventivePage() {
                     disabled={!schedule.active}
                   >
                     <Play className="mr-2 h-4 w-4" />
-                    Generate task
+                    Generate maintenance job
                   </Button>
                 </div>
               </article>

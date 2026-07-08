@@ -1,6 +1,8 @@
-/** Gateway demo imagery, served from /public/images */
+/** Photography from gatewayres.co.za */
 export const images = {
-  building: "/images/gateway-building.jpg",
-  maintenance: "/images/maintenance-worker.jpg",
-  room: "/images/student-room.jpg",
+  hero: "/images/gateway-hero.jpg",
+  residence: "/images/gateway-residence.jpg",
+  building: "/images/gateway-hero.jpg",
+  maintenance: "/images/gateway-residence.jpg",
+  room: "/images/gateway-residence.jpg",
 } as const;

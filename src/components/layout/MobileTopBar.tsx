@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react";
+import { GatewayLogo } from "@/components/brand/GatewayLogo";
 import { getPageTitle } from "@/lib/navConfig";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -41,6 +42,7 @@ export function MobileTopBar({ onMenuOpen }: MobileTopBarProps) {
       >
         <Menu className="h-5 w-5" />
       </Button>
+      <GatewayLogo height={28} className="shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="truncate font-heading text-sm font-semibold">{title}</p>
         <p className="truncate text-[11px] text-muted-foreground">
