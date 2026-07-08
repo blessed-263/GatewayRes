@@ -56,7 +56,7 @@ export function GlassStatCard({
         <span
           className={cn(
             "flex items-center gap-1 text-xs font-medium",
-            trend.direction === "up" ? "text-emerald-600" : "text-red-600"
+            trend.direction === "up" ? "text-primary" : "text-red-600"
           )}
         >
           {trend.direction === "up" ? (
@@ -109,7 +109,7 @@ export function GlassStatCard({
           <span
             className={cn(
               "flex items-center gap-0.5 text-[11px] font-medium",
-              trend.direction === "up" ? "text-emerald-300" : "text-red-300"
+              trend.direction === "up" ? "text-[#7BDCB5]" : "text-red-300"
             )}
           >
             {trend.direction === "up" ? (

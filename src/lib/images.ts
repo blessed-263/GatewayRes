@@ -1,8 +1,8 @@
-/** Photography from gatewayres.co.za */
+/** Gateway residence photography */
 export const images = {
-  hero: "/images/gateway-hero.jpg",
+  hero: "/images/IMG_4003.JPG.jpeg",
   residence: "/images/gateway-residence.jpg",
-  building: "/images/gateway-hero.jpg",
+  building: "/images/IMG_4003.JPG.jpeg",
   maintenance: "/images/gateway-residence.jpg",
   room: "/images/gateway-residence.jpg",
 } as const;

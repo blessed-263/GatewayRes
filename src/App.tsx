@@ -12,8 +12,10 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { KioskPage } from "@/pages/KioskPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { MyJobsPage } from "@/pages/MyJobsPage";
+import { PropertiesPage } from "@/pages/PropertiesPage";
 import { RepairDetailPage } from "@/pages/RepairDetailPage";
 import { SupervisorTeamPage } from "@/pages/SupervisorTeamPage";
+import { TeamGroupPage } from "@/pages/TeamGroupPage";
 import { TeamMemberPage } from "@/pages/TeamMemberPage";
 import { TasksPage } from "@/pages/TasksPage";
 import { WorkerJobPage } from "@/pages/WorkerJobPage";
@@ -74,12 +76,13 @@ export default function App() {
                     <Route path="/daily" element={<Navigate to="/tasks" replace />} />
                     <Route path="/tasks" element={<TasksPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
+                    <Route path="/team/group/:category" element={<TeamGroupPage />} />
                     <Route path="/team" element={<SupervisorTeamPage />} />
                     <Route path="/team/:memberSlug" element={<TeamMemberPage />} />
                     <Route path="/planning" element={<LegacySupervisorRedirect />} />
                     <Route path="/budget" element={<LegacySupervisorRedirect />} />
                     <Route path="/inventory" element={<LegacySupervisorRedirect />} />
-                    <Route path="/properties" element={<LegacySupervisorRedirect />} />
+                    <Route path="/properties" element={<PropertiesPage />} />
                     <Route path="/preventive" element={<LegacySupervisorRedirect />} />
                     <Route path="/approvals" element={<LegacySupervisorRedirect />} />
                     <Route path="/templates" element={<LegacySupervisorRedirect />} />

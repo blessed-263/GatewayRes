@@ -43,6 +43,14 @@ const supervisorNav: NavItem[] = [
     roles: ["supervisor"],
   },
   {
+    path: "/properties",
+    label: "Properties",
+    mark: "PR",
+    shortLabel: "Sites",
+    mobileTab: false,
+    roles: ["supervisor"],
+  },
+  {
     path: "/team",
     label: "Team",
     mark: "TM",
@@ -89,6 +97,7 @@ export function getPageTitle(pathname: string, role?: UserRole): string {
   const items = role ? navForRole(role) : allNavItems;
   const exact = items.find((item) => item.path === pathname);
   if (exact) return exact.label;
+  if (pathname.startsWith("/team/group/")) return "Team";
   if (pathname.startsWith("/my-jobs/")) return "Job";
   if (pathname.startsWith("/tasks/")) return "Maintenance Job";
   if (pathname.startsWith("/team/")) return "Team profile";

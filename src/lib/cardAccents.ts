@@ -46,7 +46,7 @@ export const statCardWash: Record<StatColor, string> = {
   secondary:
     "border-l-4 border-l-sky-500 bg-gradient-to-br from-sky-50/90 via-card to-card shadow-sm shadow-sky-500/5 dark:from-sky-950/25",
   success:
-    "border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50/90 via-card to-card shadow-sm shadow-emerald-500/5 dark:from-emerald-950/25",
+    "border-l-4 border-l-primary bg-gradient-to-br from-primary/[0.09] via-card to-card shadow-sm shadow-primary/5",
   warning:
     "border-l-4 border-l-amber-500 bg-gradient-to-br from-amber-50/90 via-card to-card shadow-sm shadow-amber-500/5 dark:from-amber-950/25",
   danger:

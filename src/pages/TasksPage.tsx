@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { TaskThumbnailCard } from "@/components/dashboard/TaskThumbnailCard";
 import { useRepairs } from "@/context/RepairsContext";
 import { complaintLabelForCategory, complaintTypeOptions } from "@/lib/complaintTypes";
+import { roomCodesMatch } from "@/lib/propertyJobs";
 import {
   isRepairOverdue,
   matchesSupervisorTaskFilter,
@@ -44,6 +45,8 @@ export function TasksPage() {
   const [params, setParams] = useSearchParams();
   const typeFilter = params.get("type") as RepairCategory | null;
   const workerFilter = params.get("worker");
+  const buildingFilter = params.get("building");
+  const unitFilter = params.get("unit");
   const dateFilter = params.get("date");
   const activeFilter = parseSupervisorTaskFilter(
     params.get("filter") ?? params.get("status")
@@ -71,6 +74,14 @@ export function TasksPage() {
     );
     if (typeFilter) list = list.filter((r) => r.category === typeFilter);
     if (workerFilter) list = list.filter((r) => r.assignedTo === workerFilter);
+    if (buildingFilter) {
+      list = list.filter(
+        (r) => r.building.toLowerCase() === buildingFilter.toLowerCase()
+      );
+    }
+    if (unitFilter) {
+      list = list.filter((r) => roomCodesMatch(r.unit, unitFilter));
+    }
     if (dateFilter) {
       list = list.filter(
         (r) =>
@@ -78,7 +89,7 @@ export function TasksPage() {
       );
     }
     return sortTasks(list);
-  }, [baseTasks, activeFilter, typeFilter, workerFilter, dateFilter]);
+  }, [baseTasks, activeFilter, typeFilter, workerFilter, buildingFilter, unitFilter, dateFilter]);
 
   const grouped = useMemo(() => {
     if (typeFilter) {
@@ -95,7 +106,9 @@ export function TasksPage() {
       .sort((a, b) => b.tasks.length - a.tasks.length);
   }, [filtered, typeFilter]);
 
-  const hasExtraFilters = Boolean(typeFilter || workerFilter || dateFilter);
+  const hasExtraFilters = Boolean(
+    typeFilter || workerFilter || buildingFilter || unitFilter || dateFilter
+  );
 
   function setFilter(filter: SupervisorTaskFilter) {
     const next = new URLSearchParams(params);
@@ -144,6 +157,12 @@ export function TasksPage() {
 
         {hasExtraFilters && (
           <p className="text-sm text-muted-foreground">
+            {buildingFilter && unitFilter ? (
+              <>
+                Showing jobs for <span className="font-semibold text-foreground">{unitFilter}</span>{" "}
+                at <span className="font-semibold text-foreground">{buildingFilter}</span>.{" "}
+              </>
+            ) : null}
             Additional filters active.{" "}
             <Link to={buildTasksUrl(activeFilter, new URLSearchParams())} className="font-semibold text-primary hover:underline">
               Clear extra filters

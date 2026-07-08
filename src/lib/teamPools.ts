@@ -1,8 +1,9 @@
-import type { RepairCategory } from "@/types/repair";
+import type { RepairCategory, Repair } from "@/types/repair";
 import { complaintTypeOptions } from "@/lib/complaintTypes";
 import { workersInPool } from "@/lib/complaintAssignment";
+import { isRepairOverdue } from "@/lib/taskFilters";
 import { getTeamProfileByName, teamProfiles, type TeamProfile } from "@/data/teamProfiles";
-import type { WorkloadFilter } from "@/components/dashboard/TeamMemberCard";
+import { workloadForActive, type WorkloadFilter } from "@/components/dashboard/TeamMemberCard";
 
 export const poolDescriptions: Partial<Record<RepairCategory, string>> = {
   plumbing: "Water, drainage, and bathroom maintenance jobs",
@@ -109,4 +110,53 @@ export function uniqueWorkersInPools(): TeamProfile[] {
     }
   }
   return teamProfiles.filter((member) => names.has(member.name));
+}
+
+/** Friendly team names shown on the Team page group cards. */
+export const teamGroupLabels: Partial<Record<RepairCategory, string>> = {
+  plumbing: "Plumbing team",
+  electrical: "Electrical team",
+  structural: "Furniture & fixtures team",
+  pest_control: "Pest control team",
+  other: "Housekeeping team",
+};
+
+export function teamGroupLabel(category: RepairCategory, fallback: string) {
+  return teamGroupLabels[category] ?? `${fallback} team`;
+}
+
+export interface PoolAnalytics {
+  openJobs: number;
+  completedJobs: number;
+  overdueJobs: number;
+}
+
+export function analyticsForPool(repairs: Repair[], category: RepairCategory): PoolAnalytics {
+  const inCategory = repairs.filter(
+    (repair) => repair.category === category && repair.status !== "cancelled"
+  );
+  return {
+    openJobs: inCategory.filter((repair) => repair.status !== "completed").length,
+    completedJobs: inCategory.filter((repair) => repair.status === "completed").length,
+    overdueJobs: inCategory.filter(
+      (repair) => repair.status !== "completed" && isRepairOverdue(repair)
+    ).length,
+  };
+}
+
+export function buildMembersWithWorkload(
+  repairs: Repair[],
+  activeByAssignee?: Record<string, number>
+): TeamMemberWorkload[] {
+  const counts = activeByAssignee ?? {};
+  if (Object.keys(counts).length === 0) {
+    for (const repair of repairs) {
+      if (!repair.assignedTo || ["completed", "cancelled"].includes(repair.status)) continue;
+      counts[repair.assignedTo] = (counts[repair.assignedTo] ?? 0) + 1;
+    }
+  }
+  return teamProfiles.map((member) => {
+    const active = counts[member.name] ?? 0;
+    return { member, active, ...workloadForActive(active) };
+  });
 }

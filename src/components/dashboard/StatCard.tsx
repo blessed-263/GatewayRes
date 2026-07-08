@@ -8,7 +8,7 @@ const tileStyles: Record<StatColor, string> = {
   primary: "bg-primary/10 text-primary",
   secondary: "bg-secondary text-secondary-foreground",
   success:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400",
+    "bg-primary/10 text-primary dark:bg-primary/20 dark:text-[#7BDCB5]",
   warning:
     "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400",
   danger: "bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400",
@@ -70,7 +70,7 @@ export function StatCard({
           <div className="mt-4 border-t border-border/50 pt-4">
             <span
               className={`text-sm font-semibold ${
-                trend > 0 ? "text-emerald-600" : "text-red-500"
+                trend > 0 ? "text-primary" : "text-red-500"
               }`}
             >
               {trend > 0 ? "+" : "−"}

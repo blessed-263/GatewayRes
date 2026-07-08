@@ -11,7 +11,9 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { RequestsByDayPanel } from "@/components/dashboard/RequestsByDayPanel";
+import { JobsByTypePanel } from "@/components/dashboard/JobsByTypePanel";
 import { GlassStatCard } from "@/components/dashboard/GlassStatCard";
+import { StatCard } from "@/components/dashboard/StatCard";
 import { useAuth } from "@/context/AuthContext";
 import { useRepairs } from "@/context/RepairsContext";
 import {
@@ -19,12 +21,10 @@ import {
   rankWorkersByClosed,
   rankWorkersByOpen,
 } from "@/lib/dashboardMetrics";
-import { images } from "@/lib/images";
 import {
   matchesSupervisorTaskFilter,
   type SupervisorTaskFilter,
 } from "@/lib/taskFilters";
-import { categoryBarClass } from "@/lib/categoryVisuals";
 import { cn } from "@/lib/utils";
 
 export type DashboardFocus = "full" | "calendar";
@@ -73,7 +73,7 @@ const heroTaskCards: {
     label: "Assigned",
     hint: "With a technician",
     icon: UserCheck,
-    iconClassName: "bg-emerald-500",
+    iconClassName: "bg-primary",
   },
   {
     filter: "completed",
@@ -123,19 +123,11 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
     [activeTasks]
   );
 
-  const maxProblemCount = Math.max(1, ...problemTypes.map((p) => p.count));
-
   return (
     <div className="space-y-8 p-5 pb-12 sm:p-8 lg:p-10">
       {(focus === "full" || focus === "calendar") && (
-        <section className="relative min-h-[28rem] overflow-hidden rounded-[1.75rem] sm:min-h-[32rem]">
-          <img
-            src={images.building}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/30" />
-          <div className="relative z-10 flex min-h-[28rem] flex-col justify-end p-6 sm:min-h-[32rem] sm:p-8">
+        <section className="min-h-[28rem] overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-primary via-[#55B896] to-[#1F5F49] sm:min-h-[32rem]">
+          <div className="flex min-h-[28rem] flex-col justify-end p-6 sm:min-h-[32rem] sm:p-8">
             <h1 className="text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
               {greeting}, {firstName}
             </h1>
@@ -174,40 +166,33 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
       <section
         id="worker-workload"
         className={cn(
-          "relative grid gap-4 overflow-hidden rounded-2xl border border-border/70 bg-card p-5 sm:grid-cols-2",
+          "grid gap-4 sm:grid-cols-2",
           focus !== "full" && "hidden"
         )}
       >
-        <img
-          src={images.residence}
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/93 via-white/90 to-white/94" />
         <Link
           to={`/tasks?worker=${encodeURIComponent(topCloser?.name ?? "")}`}
-          className="relative z-10 rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/95 to-white/95 p-4 transition-all hover:border-emerald-300 hover:shadow-sm"
+          className="block"
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Most active
-          </p>
-          <p className="mt-2 text-lg font-semibold">
-            {topCloser ? `${topCloser.name} (${topCloser.count} closed)` : "No completions yet"}
-          </p>
+          <StatCard
+            title="Most active"
+            value={topCloser?.count ?? 0}
+            subtitle={topCloser ? `${topCloser.name} · closed jobs` : "No completions yet"}
+            icon={CheckCircle2}
+            color="success"
+          />
         </Link>
         <Link
           to={`/tasks?filter=pending`}
-          className="relative z-10 rounded-xl border border-amber-200/80 bg-gradient-to-br from-amber-50/95 to-white/95 p-4 transition-all hover:border-amber-300 hover:shadow-sm"
+          className="block"
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Largest backlog
-          </p>
-          <p className="mt-2 text-lg font-semibold">
-            {topBacklog
-              ? `${topBacklog.name} (${topBacklog.count} unclosed)`
-              : "No open backlog"}
-          </p>
+          <StatCard
+            title="Largest backlog"
+            value={topBacklog?.count ?? 0}
+            subtitle={topBacklog ? `${topBacklog.name} · unclosed jobs` : "No open backlog"}
+            icon={Clock}
+            color="warning"
+          />
         </Link>
       </section>
 
@@ -215,51 +200,13 @@ export function GatewayDashboard({ focus = "full" }: GatewayDashboardProps) {
         <RequestsByDayPanel
           id="requests-by-day"
           repairs={tasks}
-          backgroundImage={images.hero}
-          overlayClassName="from-[#eaf7f3]/94 via-white/90 to-white/94"
           className={cn(focus !== "full" && focus !== "calendar" && "hidden")}
         />
 
-        <div
-          className={cn(
-            "relative overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-primary/[0.04] via-card to-card p-5",
-            focus !== "full" && "hidden"
-          )}
-        >
-          <img
-            src={images.maintenance}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/94 via-white/91 to-white/95" />
-          <h2 className="relative z-10 text-lg font-semibold">Maintenance jobs by type</h2>
-          <p className="relative z-10 mt-1 text-sm text-muted-foreground">Maintenance job counts by type</p>
-          <ul className="relative z-10 mt-6 space-y-4">
-            {problemTypes.map((item) => (
-              <li key={item.category}>
-                <Link
-                  to={`/tasks?type=${item.category}`}
-                  className="group block"
-                >
-                  <div className="mb-1.5 flex items-center justify-between text-sm">
-                    <span className="font-medium group-hover:text-primary">{item.label}</span>
-                    <span className="tabular-nums text-muted-foreground">{item.count}</span>
-                  </div>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        categoryBarClass[item.category] ?? categoryBarClass.other
-                      )}
-                      style={{ width: `${(item.count / maxProblemCount) * 100}%` }}
-                    />
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <JobsByTypePanel
+          items={problemTypes}
+          className={cn(focus !== "full" && "hidden")}
+        />
       </section>
     </div>
   );

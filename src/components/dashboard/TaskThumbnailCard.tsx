@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { categoryIcons, categoryBorderClass, categoryTileClass } from "@/lib/categoryVisuals";
@@ -24,13 +24,6 @@ interface TaskThumbnailCardProps {
   hideImages?: boolean;
 }
 
-function thumbnailUrl(repair: Repair) {
-  const photo = repair.attachments?.find(
-    (a) => a.kind !== "invoice" && a.mimeType?.startsWith("image/")
-  );
-  return photo?.url;
-}
-
 export function TaskThumbnailCard({
   repair,
   to,
@@ -38,34 +31,36 @@ export function TaskThumbnailCard({
   compact = false,
   layout = "row",
   className,
-  hideImages = false,
+  hideImages: _hideImages = true,
 }: TaskThumbnailCardProps) {
-  const photo = hideImages ? undefined : thumbnailUrl(repair);
   const CategoryIcon = categoryIcons[repair.category] ?? categoryIcons.other;
   const tileClass = categoryTileClass[repair.category] ?? categoryTileClass.other;
+  const priorityTone =
+    repair.priority === "urgent"
+      ? "from-red-500/15 via-red-500/5 to-transparent"
+      : repair.priority === "high"
+        ? "from-amber-500/15 via-amber-500/5 to-transparent"
+        : "from-primary/10 via-primary/5 to-transparent";
 
   if (layout === "tile") {
     return (
-      <Link to={to} className={cn("photo-card flex flex-col gap-3 p-4", className)}>
+      <Link
+        to={to}
+        className={cn(
+          "group flex flex-col gap-3 rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-muted/25 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md",
+          className
+        )}
+      >
         <div
           className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-            !photo && tileClass
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-black/5",
+            tileClass
           )}
         >
-          {photo ? (
-            <img
-              src={photo}
-              alt=""
-              className="h-full w-full rounded-xl object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <CategoryIcon className="h-5 w-5" strokeWidth={1.75} />
-          )}
+          <CategoryIcon className="h-5 w-5" strokeWidth={1.75} />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-semibold leading-snug text-foreground">
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="truncate text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
             {repair.title}
           </p>
           <p className="mt-1 truncate text-sm text-muted-foreground">
@@ -74,7 +69,7 @@ export function TaskThumbnailCard({
             {repair.building}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-border/60 pt-2">
           <Badge
             variant={statusBadgeVariant(repair.status)}
             className="px-2.5 py-0.5 text-[11px]"
@@ -96,51 +91,55 @@ export function TaskThumbnailCard({
     <Link
       to={to}
       className={cn(
-        "photo-card flex items-center gap-3 border-l-4 p-3",
+        "group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-border/70 bg-card p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md",
         categoryBorderClass[repair.category] ?? categoryBorderClass.other,
         compact ? "gap-3 p-3" : "gap-4 p-4",
         className
       )}
     >
+      <div className={cn("pointer-events-none absolute inset-0 bg-gradient-to-r", priorityTone)} />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-primary/30 via-primary/80 to-primary/30" />
       <div
         className={cn(
-          "flex shrink-0 items-center justify-center overflow-hidden rounded-xl",
+          "relative z-10 flex shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1 ring-black/5",
           compact ? "h-12 w-12" : "h-16 w-16 sm:h-20 sm:w-20",
-          !photo && tileClass
+          tileClass
         )}
       >
-        {photo ? (
-          <img
-            src={photo}
-            alt=""
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <CategoryIcon
-            className={compact ? "h-5 w-5" : "h-6 w-6"}
-            strokeWidth={1.75}
-          />
-        )}
+        <CategoryIcon
+          className={compact ? "h-5 w-5" : "h-6 w-6"}
+          strokeWidth={1.75}
+        />
       </div>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-semibold leading-snug text-foreground">
-          {repair.title}
-        </p>
+      <div className="relative z-10 min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <p className="truncate text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
+            {repair.title}
+          </p>
+          {repair.priority === "urgent" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700">
+              <Sparkles className="h-3 w-3" />
+              Urgent
+            </span>
+          ) : null}
+        </div>
         <p className="mt-1 truncate text-sm text-muted-foreground">
           {repair.unit} · {repair.building}
+        </p>
+        <p className="mt-1 truncate text-xs text-muted-foreground/90">
+          Reported {format(parseISO(repair.reportedAt), "dd MMM yyyy")}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <Badge
             variant={statusBadgeVariant(repair.status)}
-            className="px-2.5 py-0.5 text-[11px]"
+            className="rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-wide"
           >
             {statusLabels[repair.status]}
           </Badge>
           <Badge
             variant={priorityBadgeVariant(repair.priority)}
-            className="px-2.5 py-0.5 text-[11px]"
+            className="rounded-full px-2.5 py-0.5 text-[10px] uppercase tracking-wide"
           >
             {priorityLabels[repair.priority]}
           </Badge>
@@ -156,8 +155,9 @@ export function TaskThumbnailCard({
           </p>
         )}
       </div>
-
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      </div>
     </Link>
   );
 }

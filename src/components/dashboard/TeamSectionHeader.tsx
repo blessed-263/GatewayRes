@@ -43,7 +43,7 @@ export function TeamSectionHeader({
               jobs
             </span>
             <span className="text-muted-foreground">
-              <span className="font-semibold tabular-nums text-emerald-600">{availableCount}</span>{" "}
+              <span className="font-semibold tabular-nums text-primary">{availableCount}</span>{" "}
               available
             </span>
           </div>

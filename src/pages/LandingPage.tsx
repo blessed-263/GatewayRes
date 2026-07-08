@@ -1,16 +1,13 @@
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  ClipboardList,
   LayoutDashboard,
   Monitor,
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { GatewayLogo } from "@/components/brand/GatewayLogo";
-import { Button } from "@/components/ui/button";
 import { brand } from "@/lib/brand";
-import { images } from "@/lib/images";
 import { loginPortals } from "@/lib/loginPortals";
 
 const interfaces: {
@@ -30,7 +27,7 @@ const interfaces: {
     to: "/kiosk",
     cta: "Open kiosk",
     icon: Monitor,
-    accent: "from-primary/35 via-emerald-50/80 to-white",
+    accent: "from-primary/35 via-[#7BDCB5]/25 to-white",
   },
   {
     key: "supervisor",
@@ -54,74 +51,24 @@ const interfaces: {
 
 export function LandingPage() {
   return (
-    <div className="min-h-[100dvh] bg-[#f6f6f3] text-slate-950">
-      <header className="relative overflow-hidden border-b border-border/70">
-        <img
-          src={images.hero}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full scale-105 object-cover blur-xl brightness-50"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#3A4B96]/95 via-primary/90 to-[#1A1927]/95" />
-        <div className="relative mx-auto flex h-20 max-w-6xl items-center justify-between px-6 lg:px-8">
-          <div>
-            <a href={brand.siteUrl} target="_blank" rel="noreferrer">
-              <GatewayLogo variant="light" height={44} />
-            </a>
-            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/75">
-              Student Accommodation in Johannesburg
-            </p>
-          </div>
-        </div>
+    <div className="flex min-h-[100dvh] flex-col bg-[#f6f6f3] text-slate-950">
+      <header className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-6 lg:px-8">
+        <a href={brand.siteUrl} target="_blank" rel="noreferrer">
+          <GatewayLogo height={44} />
+        </a>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-10 lg:px-8 lg:py-14">
-        <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-              Gateway maintenance platform
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-              Choose your interface
-            </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Students log issues at the kiosk. Supervisors manage operations. Maintenance
-              staff work assigned jobs with least-privilege access.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="h-12 rounded-xl px-6">
-                <Link to="/kiosk">
-                  Start at kiosk
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 rounded-xl px-6">
-                <Link to={loginPortals.supervisor.path}>Staff sign in</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-[1.75rem] border border-border/70 bg-white shadow-sm shadow-black/[0.04]">
-            <img
-              src={images.building}
-              alt="Gateway residences"
-              className="h-56 w-full object-cover sm:h-72"
-            />
-            <div className="space-y-3 p-6">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ClipboardList className="h-4 w-4 text-primary" />
-                One platform, three clear workflows
-              </div>
-              <ol className="space-y-2 text-sm text-muted-foreground">
-                <li>1. Student submits at the kiosk</li>
-                <li>2. Supervisor triages and assigns work</li>
-                <li>3. Maintenance completes the job</li>
-              </ol>
-            </div>
-          </div>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8 lg:px-8 lg:py-10">
+        <section className="relative mb-8 overflow-hidden rounded-[1.75rem] sm:mb-10">
+          <img
+            src="/images/IMG_4811.JPG.jpeg"
+            alt="Gateway Student Accommodation"
+            className="h-48 w-full object-cover sm:h-64 lg:h-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         </section>
 
-        <section className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {interfaces.map((item) => {
             const Icon = item.icon;
             return (
@@ -147,9 +94,11 @@ export function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-border/70 bg-white/80 py-6 text-center text-xs text-muted-foreground">
+      <footer className="mt-auto border-t border-border/70 bg-white/90 py-5 text-center text-xs text-muted-foreground backdrop-blur-sm">
         © {new Date().getFullYear()} Gateway Student Accommodation
       </footer>
     </div>
   );
 }
+
+

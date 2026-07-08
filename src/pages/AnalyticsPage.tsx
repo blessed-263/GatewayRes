@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { RequestsByDayPanel } from "@/components/dashboard/RequestsByDayPanel";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { WorkerRankingPanel } from "@/components/dashboard/WorkerRankingPanel";
 import { useRepairs } from "@/context/RepairsContext";
 import {
   countByComplaintType,
@@ -179,57 +180,8 @@ export function AnalyticsPage() {
         <RequestsByDayPanel repairs={repairs} listMaxHeight="max-h-[40rem]" />
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <div className="rounded-2xl border border-border/70 bg-card p-6">
-            <h3 className="text-lg font-semibold">Most active workers</h3>
-            <p className="mt-1 text-sm text-muted-foreground">By completed jobs (closed by)</p>
-            {closedRanking.length > 0 ? (
-              <ul className="mt-5 space-y-2">
-                {closedRanking.slice(0, 8).map((row) => (
-                  <li key={row.name}>
-                    <Link
-                      to={`/tasks?worker=${encodeURIComponent(row.name)}`}
-                      className="flex items-center justify-between rounded-xl bg-muted/30 px-4 py-3 text-sm transition-colors hover:bg-muted/50"
-                    >
-                      <span className="font-medium">{row.name}</span>
-                      <span className="tabular-nums text-muted-foreground">
-                        {row.count} closed
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-8 text-center text-sm text-muted-foreground">
-                No completed maintenance jobs yet.
-              </p>
-            )}
-          </div>
-
-          <div className="rounded-2xl border border-border/70 bg-card p-6">
-            <h3 className="text-lg font-semibold">Largest open backlogs</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Unclosed jobs per assignee</p>
-            {openRanking.length > 0 ? (
-              <ul className="mt-5 space-y-2">
-                {openRanking.slice(0, 8).map((row) => (
-                  <li key={row.name}>
-                    <Link
-                      to={`/tasks?worker=${encodeURIComponent(row.name)}&filter=assigned`}
-                      className="flex items-center justify-between rounded-xl bg-muted/30 px-4 py-3 text-sm transition-colors hover:bg-muted/50"
-                    >
-                      <span className="font-medium">{row.name}</span>
-                      <span className="tabular-nums text-muted-foreground">
-                        {row.count} unclosed
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-8 text-center text-sm text-muted-foreground">
-                No open assignments yet.
-              </p>
-            )}
-          </div>
+          <WorkerRankingPanel variant="completed" items={closedRanking} />
+          <WorkerRankingPanel variant="backlog" items={openRanking} />
         </div>
     </main>
   );

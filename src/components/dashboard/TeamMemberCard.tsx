@@ -2,7 +2,7 @@ import { format, parseISO } from "date-fns";
 import { ArrowRight, Building2, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { TeamProfile } from "@/data/teamProfiles";
@@ -32,7 +32,7 @@ const accentBars = [
   "from-sky-500/80 to-sky-500/40",
   "from-amber-500/80 to-amber-500/40",
   "from-violet-500/80 to-violet-500/40",
-  "from-emerald-500/80 to-emerald-500/40",
+  "from-[#7BDCB5]/80 to-[#7BDCB5]/40",
   "from-rose-500/80 to-rose-500/40",
 ];
 
@@ -47,13 +47,13 @@ export function TeamMemberCard({
   const accent = accentClassName ?? accentBars[index % accentBars.length];
 
   const statusStyles = {
-    available: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400",
+    available: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-[#7BDCB5]",
     busy: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400",
     capacity: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400",
   } as const;
 
   const barStyles = {
-    available: "bg-emerald-500",
+    available: "bg-primary",
     busy: "bg-amber-500",
     capacity: "bg-red-500",
   } as const;
@@ -74,7 +74,6 @@ export function TeamMemberCard({
           <div className="flex items-start justify-between gap-4">
             <div className="flex min-w-0 items-start gap-4">
               <Avatar className="h-14 w-14 shrink-0 rounded-2xl border-2 border-background shadow-sm">
-                <AvatarImage src={member.avatarUrl} alt={member.name} className="object-cover" />
                 <AvatarFallback className="rounded-2xl bg-primary/10 text-lg font-bold text-primary">
                   {member.name
                     .split(" ")

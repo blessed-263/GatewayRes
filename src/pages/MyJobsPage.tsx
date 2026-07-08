@@ -9,7 +9,7 @@ import {
   matchesWorkerFilter,
   type WorkerFilter,
 } from "@/lib/taskFilters";
-import { groupJobsByBuildingAndFloor } from "@/lib/workerJobGroups";
+import { groupJobsByBuildingFloorAndRoom } from "@/lib/propertyJobs";
 import { workerFilterAccents } from "@/lib/cardAccents";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +46,7 @@ export function MyJobsPage() {
     [myJobs, activeFilter]
   );
 
-  const grouped = useMemo(() => groupJobsByBuildingAndFloor(filtered), [filtered]);
+  const grouped = useMemo(() => groupJobsByBuildingFloorAndRoom(filtered), [filtered]);
   const workerName = user?.assigneeName ?? user?.name ?? "";
 
   return (
@@ -93,15 +93,29 @@ export function MyJobsPage() {
                     <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                       Floor {floorGroup.floor}
                     </h3>
-                    <div className="space-y-3">
-                      {floorGroup.jobs.map((job) => (
-                        <TaskThumbnailCard
-                          key={job.id}
-                          repair={job}
-                          to={`/my-jobs/${job.id}`}
-                          hideImages
-                          footer={job.unit}
-                        />
+                    <div className="space-y-5">
+                      {floorGroup.rooms.map((roomGroup) => (
+                        <div key={`${buildingGroup.building}-${floorGroup.floor}-${roomGroup.unit}`}>
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <h4 className="text-sm font-semibold text-foreground">
+                              Room {roomGroup.unit}
+                            </h4>
+                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-primary">
+                              {roomGroup.jobs.length} job{roomGroup.jobs.length === 1 ? "" : "s"}
+                            </span>
+                          </div>
+                          <div className="space-y-3">
+                            {roomGroup.jobs.map((job) => (
+                              <TaskThumbnailCard
+                                key={job.id}
+                                repair={job}
+                                to={`/my-jobs/${job.id}`}
+                                hideImages
+                                footer={job.assignedTo ? `Assigned to ${job.assignedTo}` : "Unassigned"}
+                              />
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>

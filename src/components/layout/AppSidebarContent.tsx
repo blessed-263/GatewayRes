@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { GatewayLogo } from "@/components/brand/GatewayLogo";
 import {
   BarChart3,
+  Building2,
   Calendar,
   ClipboardList,
   LayoutDashboard,
@@ -19,6 +20,7 @@ const navIcons: Record<string, LucideIcon> = {
   "/tasks": ClipboardList,
   "/calendar": Calendar,
   "/analytics": BarChart3,
+  "/properties": Building2,
   "/team": Users,
   "/my-jobs": Wrench,
 };

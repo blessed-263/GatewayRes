@@ -22,6 +22,7 @@ export const propertySites: PropertySite[] = [
           { id: "gen-201", code: "201", type: "room", beds: 2 },
           { id: "gen-202", code: "202", type: "room", beds: 2 },
           { id: "gen-b204", code: "B204", type: "room", beds: 2 },
+          { id: "gen-b108", code: "B108", type: "room", beds: 2 },
         ],
       },
       {
@@ -71,6 +72,11 @@ export const propertySites: PropertySite[] = [
           { id: "tru-101", code: "101", type: "room", beds: 2 },
           { id: "tru-102", code: "102", type: "room", beds: 2 },
         ],
+      },
+      {
+        id: "tru-f3",
+        name: "Floor 3",
+        units: [{ id: "tru-308", code: "308", type: "room", beds: 2 }],
       },
     ],
   },

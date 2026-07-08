@@ -23,34 +23,34 @@ export const categoryIcons: Record<RepairCategory, LucideIcon> = {
 };
 
 export const categoryTileClass: Record<RepairCategory, string> = {
-  plumbing: "bg-[#1a6b72]/10 text-[#1a6b72]",
-  electrical: "bg-[#2a9099]/10 text-[#2a9099]",
-  hvac: "bg-[#3aabb3]/10 text-[#3aabb3]",
-  structural: "bg-[#4b6a8a]/10 text-[#4b6a8a]",
-  painting: "bg-[#6a8faf]/10 text-[#6a8faf]",
-  appliance: "bg-[#2c5f78]/10 text-[#2c5f78]",
-  pest_control: "bg-[#5ba3ab]/10 text-[#5ba3ab]",
-  other: "bg-[#7a9daf]/10 text-[#7a9daf]",
+  plumbing: "bg-[#1F5F49]/10 text-[#1F5F49]",
+  electrical: "bg-[#3A8F6E]/10 text-[#3A8F6E]",
+  hvac: "bg-[#55B896]/10 text-[#55B896]",
+  structural: "bg-[#2D7259]/10 text-[#2D7259]",
+  painting: "bg-[#F7941D]/10 text-[#F7941D]",
+  appliance: "bg-[#6BC4A8]/10 text-[#6BC4A8]",
+  pest_control: "bg-[#8FD4BC]/10 text-[#8FD4BC]",
+  other: "bg-[#7BDCB5]/10 text-[#7BDCB5]",
 };
 
 export const categoryBorderClass: Record<RepairCategory, string> = {
-  plumbing: "border-l-[#1a6b72]",
-  electrical: "border-l-[#2a9099]",
-  hvac: "border-l-[#3aabb3]",
-  structural: "border-l-[#4b6a8a]",
-  painting: "border-l-[#6a8faf]",
-  appliance: "border-l-[#2c5f78]",
-  pest_control: "border-l-[#5ba3ab]",
-  other: "border-l-[#7a9daf]",
+  plumbing: "border-l-[#1F5F49]",
+  electrical: "border-l-[#3A8F6E]",
+  hvac: "border-l-[#55B896]",
+  structural: "border-l-[#2D7259]",
+  painting: "border-l-[#F7941D]",
+  appliance: "border-l-[#6BC4A8]",
+  pest_control: "border-l-[#8FD4BC]",
+  other: "border-l-[#7BDCB5]",
 };
 
 export const categoryBarClass: Record<RepairCategory, string> = {
-  plumbing: "bg-[#1a6b72]",
-  electrical: "bg-[#2a9099]",
-  hvac: "bg-[#3aabb3]",
-  structural: "bg-[#4b6a8a]",
-  painting: "bg-[#6a8faf]",
-  appliance: "bg-[#2c5f78]",
-  pest_control: "bg-[#5ba3ab]",
-  other: "bg-[#7a9daf]",
+  plumbing: "bg-[#1F5F49]",
+  electrical: "bg-[#3A8F6E]",
+  hvac: "bg-[#55B896]",
+  structural: "bg-[#2D7259]",
+  painting: "bg-[#F7941D]",
+  appliance: "bg-[#6BC4A8]",
+  pest_control: "bg-[#8FD4BC]",
+  other: "bg-[#7BDCB5]",
 };
