@@ -95,6 +95,16 @@ export interface ActivityEntry {
   createdAt: string;
 }
 
+/** A timed work stint on a maintenance job (start → end). */
+export interface WorkTimeSession {
+  id: string;
+  workerName: string;
+  startedAt: string;
+  endedAt?: string;
+  /** Seconds between the worker's previous job end and this start. */
+  gapBeforeSeconds?: number;
+}
+
 export interface Repair {
   id: string;
   unit: string;
@@ -136,6 +146,7 @@ export interface Repair {
   approvalRequiredBecause?: string;
   quote?: RepairQuote;
   contractorId?: string;
+  workSessions?: WorkTimeSession[];
 }
 
 export interface CreateRepairInput {

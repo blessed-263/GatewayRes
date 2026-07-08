@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RepairAttachments } from "@/components/dashboard/RepairAttachments";
 import { RepairComments } from "@/components/dashboard/RepairComments";
 import { RepairPartRequests } from "@/components/dashboard/RepairPartRequests";
+import { TaskWorkTimer } from "@/components/dashboard/TaskWorkTimer";
 import { assignableMembers } from "@/data/teamMembers";
 import { useAuth } from "@/context/AuthContext";
 import { useRepairs } from "@/context/RepairsContext";
@@ -79,6 +80,8 @@ const actionLabels: Record<string, string> = {
   auto_assigned: "Auto-assigned",
   closed_by: "Closed",
   reopened: "Reopened",
+  work_timer_started: "Work started",
+  work_timer_stopped: "Work ended",
 };
 
 export function RepairDetailPage() {
@@ -494,6 +497,19 @@ export function RepairDetailPage() {
               </CardContent>
             </Card>
           </div>
+
+          <TaskWorkTimer
+            className="mt-6"
+            repair={repair}
+            workerName={
+              repair.assignedTo ??
+              repair.workSessions?.[0]?.workerName ??
+              "Technician"
+            }
+            readOnly
+            onStart={async () => {}}
+            onEnd={async () => {}}
+          />
           </TabsContent>
 
           <TabsContent value="files">

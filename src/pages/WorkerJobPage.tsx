@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RepairComments } from "@/components/dashboard/RepairComments";
+import { TaskWorkTimer } from "@/components/dashboard/TaskWorkTimer";
 import { useAuth } from "@/context/AuthContext";
 import { useRepairs } from "@/context/RepairsContext";
 import { complaintLabelForCategory } from "@/lib/complaintTypes";
@@ -26,7 +27,8 @@ export function WorkerJobPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { getRepairById, updateRepairStatus, addRepairComment } = useRepairs();
+  const { getRepairById, updateRepairStatus, addRepairComment, startWorkSession, endWorkSession } =
+    useRepairs();
 
   const [repair, setRepair] = useState<Repair | null>(null);
   const [saving, setSaving] = useState(false);
@@ -58,13 +60,14 @@ export function WorkerJobPage() {
   async function setStatus(status: RepairStatus) {
     setSaving(true);
     try {
-      await updateRepairStatus(repair!.id, status, user!.name);
+      await updateRepairStatus(repair!.id, status, workerName);
       setRepair(getRepairById(repair!.id) ?? null);
     } finally {
       setSaving(false);
     }
   }
 
+  const workerName = user.assigneeName ?? user.name;
   const floor =
     repair.floor ??
     repair.residentPhone?.replace(/^Floor\s+/i, "") ??
@@ -133,6 +136,19 @@ export function WorkerJobPage() {
             )}
           </dl>
         </section>
+
+        <TaskWorkTimer
+          repair={repair}
+          workerName={workerName}
+          onStart={async () => {
+            const updated = await startWorkSession(repair.id, workerName);
+            setRepair(updated);
+          }}
+          onEnd={async () => {
+            const updated = await endWorkSession(repair.id, workerName);
+            setRepair(updated);
+          }}
+        />
 
         <section className="rounded-2xl border border-border/70 bg-card p-5">
           <h2 className="mb-4 text-sm font-semibold">Status</h2>
